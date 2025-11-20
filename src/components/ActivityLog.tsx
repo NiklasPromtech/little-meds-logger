@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Pill, Pencil, Trash2 } from "lucide-react";
-import { LogMedicationDialog } from "./LogMedicationDialog";
-import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
 import {
@@ -63,8 +61,6 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
-  const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [deleteLog, setDeleteLog] = useState<{ id: string; type: string } | null>(null);
   const { toast } = useToast();
@@ -217,55 +213,19 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           <Pill className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">Nothing to track yet</h3>
           <p className="text-muted-foreground mb-6">
-            Add medications or health tracking items in the Manage tab
+            Add medications or health tracking items in Settings
           </p>
         </Card>
       ) : (
         <>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {medications.map((med) => (
-                <Button
-                  key={med.id}
-                  variant="outline"
-                  size="lg"
-                  className="h-auto py-4 flex flex-col items-start"
-                  onClick={() => setSelectedMedication(med)}
-                >
-                  <span className="font-semibold">{med.name}</span>
-                  {med.dosage && (
-                    <span className="text-sm text-muted-foreground">{med.dosage}</span>
-                  )}
-                  <span className="text-xs text-primary mt-1">Tap to log →</span>
-                </Button>
-              ))}
 
-              {measurements.map((meas) => (
-                <Button
-                  key={meas.id}
-                  variant="outline"
-                  size="lg"
-                  className="h-auto py-4 flex flex-col items-start"
-                  onClick={() => setSelectedMeasurement(meas)}
-                >
-                  <span className="font-semibold">{meas.name}</span>
-                  {meas.unit && (
-                    <span className="text-sm text-muted-foreground">({meas.unit})</span>
-                  )}
-                  <span className="text-xs text-primary mt-1">Tap to log →</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-            {activity.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-muted-foreground">No activity yet</p>
-              </Card>
-            ) : (
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Activity</h3>
+          {activity.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No activity logged yet</p>
+            </Card>
+          ) : (
               <div className="space-y-2">
                 {activity.map((item) => {
                   const timeUntil = item.next_dose_time ? getTimeUntilNextDose(item.next_dose_time) : null;
@@ -321,7 +281,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                       </div>
                       
                       {waitProgress && (
-                        <div className="space-y-2">
+            <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span className={waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"}>
                               {waitProgress.isReady ? "Can take next dose" : timeUntil}
@@ -353,32 +313,6 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
             )}
           </div>
         </>
-      )}
-
-      {selectedMedication && (
-        <LogMedicationDialog
-          open={!!selectedMedication}
-          onOpenChange={(open) => !open && setSelectedMedication(null)}
-          medication={selectedMedication}
-          onLogAdded={() => {
-            fetchActivity();
-            setSelectedMedication(null);
-            toast({ title: "Medication logged!" });
-          }}
-        />
-      )}
-
-      {selectedMeasurement && (
-        <LogMeasurementDialog
-          open={!!selectedMeasurement}
-          onOpenChange={(open) => !open && setSelectedMeasurement(null)}
-          measurement={selectedMeasurement}
-          onLogAdded={() => {
-            fetchActivity();
-            setSelectedMeasurement(null);
-            toast({ title: "Measurement logged!" });
-          }}
-        />
       )}
 
       {editingLog && editingLog.type === "medication" && (
