@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
@@ -84,7 +83,6 @@ export function ChildSettingsSheet({
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
   const [deleteItem, setDeleteItem] = useState<{ id: string; type: string; name: string } | null>(null);
   const [showDeleteChild, setShowDeleteChild] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -132,14 +130,9 @@ export function ChildSettingsSheet({
 
       if (error) throw error;
 
-      toast({ title: "Profile updated" });
       onUpdate();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error updating profile:", error);
     }
   };
 
@@ -152,14 +145,9 @@ export function ChildSettingsSheet({
 
       if (error) throw error;
 
-      toast({ title: `${deleteItem.name} deleted` });
       fetchData();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error deleting item:", error);
     } finally {
       setDeleteItem(null);
     }
@@ -174,14 +162,9 @@ export function ChildSettingsSheet({
 
       if (error) throw error;
 
-      toast({ title: "Child profile deleted" });
       navigate("/dashboard");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error deleting child:", error);
     }
   };
 

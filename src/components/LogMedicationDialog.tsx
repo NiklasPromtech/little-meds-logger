@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Minus, Plus } from "lucide-react";
 
 interface Medication {
@@ -36,7 +35,6 @@ export function LogMedicationDialog({
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,11 +60,7 @@ export function LogMedicationDialog({
       onOpenChange(false);
       onLogAdded();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error logging medication:", error);
     } finally {
       setLoading(false);
     }

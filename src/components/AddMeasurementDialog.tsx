@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface AddMeasurementDialogProps {
   open: boolean;
@@ -28,7 +27,6 @@ export function AddMeasurementDialog({
   const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,17 +42,12 @@ export function AddMeasurementDialog({
 
       if (error) throw error;
 
-      toast({ title: "Measurement added successfully!" });
       setName("");
       setUnit("");
       onOpenChange(false);
       onMeasurementAdded();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error adding measurement:", error);
     } finally {
       setLoading(false);
     }

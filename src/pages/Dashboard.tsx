@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Heart, Plus, LogOut } from "lucide-react";
 import { CreateChildDialog } from "@/components/CreateChildDialog";
 
@@ -20,7 +19,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     checkAuth();
@@ -44,11 +42,7 @@ const Dashboard = () => {
       if (error) throw error;
       setChildren(data || []);
     } catch (error: any) {
-      toast({
-        title: "Error loading children",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error loading children:", error);
     } finally {
       setLoading(false);
     }

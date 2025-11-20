@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 
 interface Measurement {
   id: string;
@@ -35,7 +34,6 @@ export function LogMeasurementDialog({
   const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,11 +41,7 @@ export function LogMeasurementDialog({
 
     const numValue = parseFloat(value);
     if (isNaN(numValue)) {
-      toast({
-        title: "Invalid value",
-        description: "Please enter a valid number",
-        variant: "destructive",
-      });
+      console.error("Invalid value entered");
       return;
     }
 
@@ -65,17 +59,12 @@ export function LogMeasurementDialog({
 
       if (error) throw error;
 
-      toast({ title: "Measurement logged!" });
       setValue("");
       setNotes("");
       onOpenChange(false);
       onLogAdded();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error logging measurement:", error);
     } finally {
       setLoading(false);
     }
