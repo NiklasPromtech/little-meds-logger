@@ -8,11 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface ActivityItem {
   id: string;
@@ -27,6 +38,7 @@ interface EditMeasurementLogDialogProps {
   onOpenChange: (open: boolean) => void;
   log: ActivityItem;
   onLogUpdated: () => void;
+  onDelete?: () => void;
 }
 
 export function EditMeasurementLogDialog({
@@ -34,6 +46,7 @@ export function EditMeasurementLogDialog({
   onOpenChange,
   log,
   onLogUpdated,
+  onDelete,
 }: EditMeasurementLogDialogProps) {
   const parseValue = (val?: string) => {
     if (!val) return "";
@@ -45,6 +58,7 @@ export function EditMeasurementLogDialog({
   const [notes, setNotes] = useState(log.notes || "");
   const [recordedAt, setRecordedAt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -91,6 +105,27 @@ export function EditMeasurementLogDialog({
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from("measurement_logs")
+        .delete()
+        .eq("id", log.id);
+
+      if (error) throw error;
+
+      toast({ title: "Log deleted" });
+      onOpenChange(false);
+      onDelete?.();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -146,18 +181,46 @@ export function EditMeasurementLogDialog({
           <div className="flex gap-2">
             <Button
               type="button"
+              variant="destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+            <div className="flex-1" />
+            <Button
+              type="button"
               variant="outline"
-              className="flex-1"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={loading}>
+            <Button type="submit" disabled={loading}>
               {loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>
       </DialogContent>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this log?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this entry from the history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

@@ -3,21 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Pill, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { Pill, RotateCcw } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 interface Medication {
@@ -65,7 +55,6 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
-  const [deleteLog, setDeleteLog] = useState<{ id: string; type: string } | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
   const { toast } = useToast();
 
@@ -100,7 +89,7 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
     try {
       const { data: medLogs } = await supabase
         .from("medication_logs")
-        .select("id, given_at, quantity, notes, medication_id, medications(name, dosage, wait_hours)")
+        .select("id, given_at, quantity, notes, medication_id, wait_hours, medications(name, dosage, wait_hours)")
         .eq("medications.child_id", childId)
         .order("given_at", { ascending: false })
         .limit(50);
@@ -114,7 +103,8 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
 
       const combined: ActivityItem[] = [
         ...(medLogs || []).map((log: any) => {
-          const waitHours = log.medications?.wait_hours;
+          // Use log's custom wait_hours if set, otherwise use medication's default
+          const waitHours = log.wait_hours ?? log.medications?.wait_hours;
           const nextDoseTime = waitHours 
             ? new Date(new Date(log.given_at).getTime() + waitHours * 60 * 60 * 1000)
             : null;
@@ -145,28 +135,6 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
       setActivity(combined.slice(0, 50));
     } catch (error) {
       console.error("Error fetching activity:", error);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteLog) return;
-
-    try {
-      const table = deleteLog.type === "medication" ? "medication_logs" : "measurement_logs";
-      const { error } = await supabase.from(table).delete().eq("id", deleteLog.id);
-
-      if (error) throw error;
-
-      toast({ title: "Log deleted" });
-      fetchActivity();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteLog(null);
     }
   };
 
@@ -238,7 +206,11 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
                     : null;
                   
                   return (
-                    <Card key={item.id} className="p-4">
+                    <Card 
+                      key={item.id} 
+                      className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setEditingLog(item)}
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <p className="font-semibold">{item.name}</p>
@@ -258,29 +230,13 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right mr-2">
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(item.timestamp), "MMM d")}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {format(new Date(item.timestamp), "h:mm a")}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingLog(item)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteLog({ id: item.id, type: item.type })}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(item.timestamp), "MMM d")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(item.timestamp), "h:mm a")}
+                          </p>
                         </div>
                       </div>
                       
@@ -368,6 +324,11 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
             onActivityUpdate?.();
             toast({ title: "Log updated!" });
           }}
+          onDelete={() => {
+            fetchActivity();
+            setEditingLog(null);
+            onActivityUpdate?.();
+          }}
         />
       )}
 
@@ -382,28 +343,13 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
             onActivityUpdate?.();
             toast({ title: "Log updated!" });
           }}
+          onDelete={() => {
+            fetchActivity();
+            setEditingLog(null);
+            onActivityUpdate?.();
+          }}
         />
       )}
-
-      <AlertDialog open={!!deleteLog} onOpenChange={() => setDeleteLog(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this log?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove this entry from the history. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
