@@ -92,19 +92,36 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
 
   const fetchActivity = async () => {
     try {
-      const { data: medLogs } = await supabase
+      // First get all medication IDs for this child
+      const { data: childMeds } = await supabase
+        .from("medications")
+        .select("id")
+        .eq("child_id", childId);
+      
+      const medicationIds = childMeds?.map(m => m.id) || [];
+      
+      // Then fetch logs only for those medications
+      const { data: medLogs } = medicationIds.length > 0 ? await supabase
         .from("medication_logs")
         .select("id, given_at, quantity, notes, medication_id, wait_hours, medications(name, accurate_medical_name, dosage, wait_hours)")
-        .eq("medications.child_id", childId)
+        .in("medication_id", medicationIds)
         .order("given_at", { ascending: false })
-        .limit(50);
+        .limit(50) : { data: [] };
 
-      const { data: measLogs } = await supabase
+      // First get all measurement IDs for this child
+      const { data: childMeas } = await supabase
+        .from("measurements")
+        .select("id")
+        .eq("child_id", childId);
+      
+      const measurementIds = childMeas?.map(m => m.id) || [];
+
+      const { data: measLogs } = measurementIds.length > 0 ? await supabase
         .from("measurement_logs")
         .select("id, recorded_at, value, notes, measurement_id, measurements(name, unit)")
-        .eq("measurements.child_id", childId)
+        .in("measurement_id", measurementIds)
         .order("recorded_at", { ascending: false })
-        .limit(50);
+        .limit(50) : { data: [] };
 
       const combined: ActivityItem[] = [
         ...(medLogs || []).map((log: any) => {
