@@ -33,6 +33,7 @@ import { Separator } from "@/components/ui/separator";
 interface Medication {
   id: string;
   name: string;
+  accurate_medical_name: string | null;
   dosage: string | null;
   notes: string | null;
   wait_hours: number | null;

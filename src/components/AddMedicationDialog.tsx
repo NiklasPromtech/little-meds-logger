@@ -27,6 +27,7 @@ export function AddMedicationDialog({
   onMedicationAdded,
 }: AddMedicationDialogProps) {
   const [name, setName] = useState("");
+  const [accurateMedicalName, setAccurateMedicalName] = useState("");
   const [dosage, setDosage] = useState("");
   const [notes, setNotes] = useState("");
   const [waitHours, setWaitHours] = useState("");
@@ -42,6 +43,7 @@ export function AddMedicationDialog({
       const { error } = await supabase.from("medications").insert({
         child_id: childId,
         name: name.trim(),
+        accurate_medical_name: accurateMedicalName.trim() || null,
         dosage: dosage.trim() || null,
         notes: notes.trim() || null,
         wait_hours: waitHours ? parseInt(waitHours) : null,
@@ -51,6 +53,7 @@ export function AddMedicationDialog({
 
       toast({ title: "Medication added successfully!" });
       setName("");
+      setAccurateMedicalName("");
       setDosage("");
       setNotes("");
       setWaitHours("");
@@ -87,6 +90,19 @@ export function AddMedicationDialog({
               placeholder="e.g., Tylenol"
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="accurateMedicalName">Accurate Medical Name</Label>
+            <Input
+              id="accurateMedicalName"
+              value={accurateMedicalName}
+              onChange={(e) => setAccurateMedicalName(e.target.value)}
+              placeholder="e.g., Airomir 0.1 mg/dos Salbutamol"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Full medical name with active ingredient
+            </p>
           </div>
 
           <div>

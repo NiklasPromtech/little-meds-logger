@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 interface Medication {
   id: string;
   name: string;
+  accurate_medical_name: string | null;
   dosage: string | null;
   notes: string | null;
   wait_hours: number | null;
@@ -35,6 +36,7 @@ export function EditMedicationDefinitionDialog({
   onMedicationUpdated,
 }: EditMedicationDefinitionDialogProps) {
   const [name, setName] = useState(medication.name);
+  const [accurateMedicalName, setAccurateMedicalName] = useState(medication.accurate_medical_name || "");
   const [dosage, setDosage] = useState(medication.dosage || "");
   const [notes, setNotes] = useState(medication.notes || "");
   const [waitHours, setWaitHours] = useState(medication.wait_hours?.toString() || "");
@@ -51,6 +53,7 @@ export function EditMedicationDefinitionDialog({
         .from("medications")
         .update({
           name: name.trim(),
+          accurate_medical_name: accurateMedicalName.trim() || null,
           dosage: dosage.trim() || null,
           notes: notes.trim() || null,
           wait_hours: waitHours ? parseInt(waitHours) : null,
@@ -93,6 +96,19 @@ export function EditMedicationDefinitionDialog({
               placeholder="e.g., Tylenol"
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="accurateMedicalName">Accurate Medical Name</Label>
+            <Input
+              id="accurateMedicalName"
+              value={accurateMedicalName}
+              onChange={(e) => setAccurateMedicalName(e.target.value)}
+              placeholder="e.g., Airomir 0.1 mg/dos Salbutamol"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Full medical name with active ingredient
+            </p>
           </div>
 
           <div>

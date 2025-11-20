@@ -13,6 +13,7 @@ import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
 interface Medication {
   id: string;
   name: string;
+  accurate_medical_name: string | null;
   dosage: string | null;
   wait_hours: number | null;
 }
@@ -35,6 +36,8 @@ interface ActivityItem {
   measurement_id?: string;
   wait_hours?: number | null;
   next_dose_time?: Date | null;
+  accurate_medical_name?: string | null;
+  dosage?: string | null;
 }
 
 interface ChildData {
@@ -56,6 +59,7 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
   const [loading, setLoading] = useState(true);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
+  const [filter, setFilter] = useState<"all" | "medication" | "measurement">("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,7 +93,7 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
     try {
       const { data: medLogs } = await supabase
         .from("medication_logs")
-        .select("id, given_at, quantity, notes, medication_id, wait_hours, medications(name, dosage, wait_hours)")
+        .select("id, given_at, quantity, notes, medication_id, wait_hours, medications(name, accurate_medical_name, dosage, wait_hours)")
         .eq("medications.child_id", childId)
         .order("given_at", { ascending: false })
         .limit(50);
@@ -119,6 +123,8 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
             medication_id: log.medication_id,
             wait_hours: waitHours,
             next_dose_time: nextDoseTime,
+            accurate_medical_name: log.medications?.accurate_medical_name,
+            dosage: log.medications?.dosage,
           };
         }),
         ...(measLogs || []).map((log: any) => ({
@@ -177,6 +183,9 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
   }
 
   const hasItems = medications.length > 0 || measurements.length > 0;
+  const filteredActivity = activity.filter(item => 
+    filter === "all" || item.type === filter
+  );
 
   return (
     <div className="space-y-6">
@@ -192,14 +201,42 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
         <>
 
         <div>
-          <h3 className="text-lg font-semibold mb-4">Activity</h3>
-          {activity.length === 0 ? (
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Activity</h3>
+            <div className="flex gap-1 bg-muted rounded-lg p-1">
+              <Button
+                size="sm"
+                variant={filter === "all" ? "default" : "ghost"}
+                onClick={() => setFilter("all")}
+                className="text-xs h-7 px-3"
+              >
+                All
+              </Button>
+              <Button
+                size="sm"
+                variant={filter === "medication" ? "default" : "ghost"}
+                onClick={() => setFilter("medication")}
+                className="text-xs h-7 px-3"
+              >
+                Medication
+              </Button>
+              <Button
+                size="sm"
+                variant={filter === "measurement" ? "default" : "ghost"}
+                onClick={() => setFilter("measurement")}
+                className="text-xs h-7 px-3"
+              >
+                Health
+              </Button>
+            </div>
+          </div>
+          {filteredActivity.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No activity logged yet</p>
             </Card>
           ) : (
               <div className="space-y-2">
-                {activity.map((item) => {
+                {filteredActivity.map((item) => {
                   const timeUntil = item.next_dose_time ? getTimeUntilNextDose(item.next_dose_time) : null;
                   const waitProgress = item.wait_hours && item.next_dose_time
                     ? getWaitProgress(item.timestamp, item.next_dose_time, item.wait_hours)
@@ -248,14 +285,29 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
                         
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">{item.name}</p>
+                          {item.type === "medication" && item.accurate_medical_name && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {item.accurate_medical_name}
+                            </p>
+                          )}
+                          {item.type === "medication" && item.dosage && (
+                            <p className="text-xs text-muted-foreground">
+                              Dosage: {item.dosage}
+                            </p>
+                          )}
                           {item.quantity && (
                             <p className="text-xs text-muted-foreground">
-                              {item.quantity}
+                              Quantity: {item.quantity}
                             </p>
                           )}
                           {item.value && (
                             <p className="text-xs text-muted-foreground">
                               {item.value}
+                            </p>
+                          )}
+                          {item.type === "measurement" && (
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(item.timestamp).toLocaleString()}
                             </p>
                           )}
                           {waitProgress && (
@@ -299,7 +351,7 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
         <LogMedicationDialog
           open={!!logAgainItem}
           onOpenChange={(open) => !open && setLogAgainItem(null)}
-          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", dosage: null, wait_hours: null }}
+          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", accurate_medical_name: null, dosage: null, wait_hours: null }}
           onLogAdded={() => {
             fetchActivity();
             setLogAgainItem(null);
