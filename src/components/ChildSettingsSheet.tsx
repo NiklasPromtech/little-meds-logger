@@ -135,7 +135,7 @@ export function ChildSettingsSheet({
           .from("profiles")
           .select("full_name, email")
           .eq("id", share.user_id)
-          .single();
+          .maybeSingle();
         
         return {
           ...share,
