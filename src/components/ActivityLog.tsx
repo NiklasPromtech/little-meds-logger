@@ -8,7 +8,7 @@ import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
-import { format } from "date-fns";
+
 
 interface Medication {
   id: string;
@@ -208,73 +208,83 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
                   return (
                     <Card 
                       key={item.id} 
-                      className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setEditingLog(item)}
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <p className="font-semibold">{item.name}</p>
+                      <div className="flex items-center gap-3">
+                        {waitProgress && (
+                          <div className="relative flex-shrink-0">
+                            <svg className="w-12 h-12 transform -rotate-90">
+                              <circle
+                                cx="24"
+                                cy="24"
+                                r="20"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                fill="none"
+                                className="text-muted"
+                              />
+                              <circle
+                                cx="24"
+                                cy="24"
+                                r="20"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                fill="none"
+                                strokeDasharray={`${2 * Math.PI * 20}`}
+                                strokeDashoffset={`${2 * Math.PI * 20 * (1 - waitProgress.percentage / 100)}`}
+                                className={`transition-all duration-1000 ${
+                                  waitProgress.isReady ? "text-primary" : "text-accent"
+                                }`}
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xs font-semibold">
+                                {Math.round(waitProgress.percentage)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{item.name}</p>
                           {item.quantity && (
-                            <p className="text-sm text-muted-foreground">
-                              Quantity: {item.quantity}
+                            <p className="text-xs text-muted-foreground">
+                              {item.quantity}
                             </p>
                           )}
                           {item.value && (
-                            <p className="text-sm text-muted-foreground">
-                              Value: {item.value}
+                            <p className="text-xs text-muted-foreground">
+                              {item.value}
+                            </p>
+                          )}
+                          {waitProgress && (
+                            <p className={`text-xs mt-1 ${
+                              waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"
+                            }`}>
+                              {waitProgress.isReady ? "Ready now" : timeUntil}
                             </p>
                           )}
                           {item.notes && (
-                            <p className="text-sm text-muted-foreground italic mt-1">
+                            <p className="text-xs text-muted-foreground italic mt-1 truncate">
                               {item.notes}
                             </p>
                           )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(item.timestamp), "MMM d")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(item.timestamp), "h:mm a")}
-                          </p>
-                        </div>
                       </div>
                       
-                      {waitProgress && (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className={waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"}>
-                              {waitProgress.isReady ? "Can take next dose" : timeUntil}
-                            </span>
-                            <span className="text-muted-foreground">
-                              {Math.round(waitProgress.percentage)}%
-                            </span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-1000 ${
-                                waitProgress.isReady
-                                  ? "bg-primary animate-pulse"
-                                  : "bg-accent"
-                              }`}
-                              style={{ width: `${waitProgress.percentage}%` }}
-                            />
-                          </div>
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Just took</span>
-                            <span>Ready</span>
-                          </div>
-                          {waitProgress.isReady && item.type === "medication" && (
-                            <Button
-                              size="sm"
-                              className="w-full mt-2"
-                              onClick={() => setLogAgainItem(item)}
-                            >
-                              <RotateCcw className="h-3 w-3 mr-2" />
-                              Log Again
-                            </Button>
-                          )}
-                        </div>
+                      {waitProgress?.isReady && item.type === "medication" && (
+                        <Button
+                          size="sm"
+                          className="w-full mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLogAgainItem(item);
+                          }}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-2" />
+                          Log Again
+                        </Button>
                       )}
                     </Card>
                   );
