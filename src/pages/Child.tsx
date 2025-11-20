@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Settings } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
 import { ManageItems } from "@/components/ManageItems";
+import { QuickLogFAB } from "@/components/QuickLogFAB";
 
 interface ChildData {
   id: string;
@@ -133,6 +134,8 @@ const Child = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <QuickLogFAB childId={id!} onLogComplete={fetchChild} />
     </div>
   );
 };
