@@ -23,6 +23,7 @@ const Child = () => {
   const [child, setChild] = useState<ChildData | null>(null);
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -120,10 +121,10 @@ const Child = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <ActivityLog childId={id!} child={child} onActivityUpdate={fetchChild} />
+        <ActivityLog childId={id!} child={child} onActivityUpdate={fetchChild} refreshTrigger={refreshTrigger} />
       </main>
 
-      <QuickLogFAB childId={id!} onLogComplete={fetchChild} />
+      <QuickLogFAB childId={id!} onLogComplete={() => setRefreshTrigger(prev => prev + 1)} />
 
       <ChildSettingsSheet 
         open={settingsOpen}
