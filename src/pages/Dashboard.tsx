@@ -76,10 +76,6 @@ const Dashboard = () => {
               Track medications and measurements for each child
             </p>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Child
-          </Button>
         </div>
 
         {loading ? (
@@ -121,6 +117,17 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <Button
+          size="lg"
+          className="h-14 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          onClick={() => setShowCreateDialog(true)}
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Add Child
+        </Button>
+      </div>
 
       <CreateChildDialog
         open={showCreateDialog}
