@@ -147,6 +147,7 @@ export type Database = {
           id: string
           medication_id: string
           notes: string | null
+          quantity: string | null
         }
         Insert: {
           given_at?: string
@@ -154,6 +155,7 @@ export type Database = {
           id?: string
           medication_id: string
           notes?: string | null
+          quantity?: string | null
         }
         Update: {
           given_at?: string
@@ -161,6 +163,7 @@ export type Database = {
           id?: string
           medication_id?: string
           notes?: string | null
+          quantity?: string | null
         }
         Relationships: [
           {

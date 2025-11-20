@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Share2, Settings } from "lucide-react";
-import { GaveTab } from "@/components/GaveTab";
-import { StatsTab } from "@/components/StatsTab";
-import { ChildSettingsDialog } from "@/components/ChildSettingsDialog";
+import { ArrowLeft, Settings } from "lucide-react";
+import { ActivityLog } from "@/components/ActivityLog";
+import { ManageItems } from "@/components/ManageItems";
 
 interface ChildData {
   id: string;
@@ -23,7 +22,6 @@ const Child = () => {
   const { toast } = useToast();
   const [child, setChild] = useState<ChildData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -58,33 +56,28 @@ const Child = () => {
   const updateFavicon = (childData?: ChildData) => {
     if (!childData) return;
 
-    // Create canvas for favicon
     const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw background
     ctx.fillStyle = childData.color;
     ctx.beginPath();
     ctx.arc(32, 32, 32, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw initials
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 28px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(childData.initials, 32, 32);
 
-    // Update favicon
     const link = document.querySelector("link[rel='icon']") as HTMLLinkElement;
     if (link) {
       link.href = canvas.toDataURL();
     }
 
-    // Update title
     document.title = `${childData.name} - KidCare`;
   };
 
@@ -107,12 +100,6 @@ const Child = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
           </div>
           
           <div className="flex items-center gap-4">
@@ -128,28 +115,24 @@ const Child = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="gave" className="w-full">
+        <Tabs defaultValue="log" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="gave">Gave</TabsTrigger>
-            <TabsTrigger value="stats">Stats</TabsTrigger>
+            <TabsTrigger value="log">Activity Log</TabsTrigger>
+            <TabsTrigger value="manage">
+              <Settings className="h-4 w-4 mr-2" />
+              Manage
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="gave">
-            <GaveTab childId={id!} />
+          <TabsContent value="log">
+            <ActivityLog childId={id!} child={child} />
           </TabsContent>
 
-          <TabsContent value="stats">
-            <StatsTab childId={id!} />
+          <TabsContent value="manage">
+            <ManageItems childId={id!} child={child} onUpdate={fetchChild} />
           </TabsContent>
         </Tabs>
       </main>
-
-      <ChildSettingsDialog
-        open={showSettings}
-        onOpenChange={setShowSettings}
-        child={child}
-        onUpdate={fetchChild}
-      />
     </div>
   );
 };
