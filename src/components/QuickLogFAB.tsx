@@ -93,7 +93,10 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
         </Button>
       </div>
 
-      <Sheet open={showMedicationSheet} onOpenChange={setShowMedicationSheet}>
+      <Sheet open={showMedicationSheet} onOpenChange={(open) => {
+        if (open) fetchData(); // Refresh data when opening
+        setShowMedicationSheet(open);
+      }}>
         <SheetContent side="bottom" className="h-[80vh]">
           <SheetHeader>
             <SheetTitle>Log Medication</SheetTitle>
@@ -124,7 +127,10 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
         </SheetContent>
       </Sheet>
 
-      <Sheet open={showMeasurementSheet} onOpenChange={setShowMeasurementSheet}>
+      <Sheet open={showMeasurementSheet} onOpenChange={(open) => {
+        if (open) fetchData(); // Refresh data when opening
+        setShowMeasurementSheet(open);
+      }}>
         <SheetContent side="bottom" className="h-[80vh]">
           <SheetHeader>
             <SheetTitle>Log Health Tracking</SheetTitle>
