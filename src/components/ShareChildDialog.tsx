@@ -40,17 +40,14 @@ export function ShareChildDialog({
 
     setLoading(true);
     try {
-      // Find user by email
-      const { data: userData, error: userError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", email)
-        .single();
+      // Find user by email using database function
+      const { data: userId, error: userError } = await supabase
+        .rpc('get_user_id_by_email', { user_email: email.toLowerCase().trim() });
 
-      if (userError) {
+      if (userError || !userId) {
         toast({
           title: "User not found",
-          description: "No user found with that email address",
+          description: "No user found with that email address. They need to create an account first.",
           variant: "destructive",
         });
         return;
@@ -59,9 +56,26 @@ export function ShareChildDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Check if already shared
+      const { data: existingShare } = await supabase
+        .from("child_shares")
+        .select("id")
+        .eq("child_id", child.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (existingShare) {
+        toast({
+          title: "Already shared",
+          description: "This user already has access to this child",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase.from("child_shares").insert({
         child_id: child.id,
-        user_id: userData.id,
+        user_id: userId,
         shared_by: user.id,
       });
 
