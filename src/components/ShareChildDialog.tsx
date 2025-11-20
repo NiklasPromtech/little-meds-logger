@@ -22,12 +22,14 @@ interface ShareChildDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   child: ChildData;
+  onShareAdded?: () => void;
 }
 
 export function ShareChildDialog({
   open,
   onOpenChange,
   child,
+  onShareAdded,
 }: ShareChildDialogProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -72,6 +74,7 @@ export function ShareChildDialog({
       if (error) throw error;
 
       setEmail("");
+      onShareAdded?.();
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error sharing access:", error);
