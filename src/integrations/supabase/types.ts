@@ -239,6 +239,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_id_by_email: { Args: { user_email: string }; Returns: string }
       has_child_access: {
         Args: { _child_id: string; _user_id: string }
         Returns: boolean
