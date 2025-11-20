@@ -35,6 +35,7 @@ export function LogMedicationDialog({
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +56,14 @@ export function LogMedicationDialog({
 
       if (error) throw error;
 
-      setQuantity(1);
-      setNotes("");
-      onOpenChange(false);
-      onLogAdded();
+      setSuccess(true);
+      setTimeout(() => {
+        setQuantity(1);
+        setNotes("");
+        setSuccess(false);
+        onOpenChange(false);
+        onLogAdded();
+      }, 600);
     } catch (error: any) {
       console.error("Error logging medication:", error);
     } finally {
@@ -133,11 +138,17 @@ export function LogMedicationDialog({
               variant="outline"
               className="flex-1"
               onClick={() => onOpenChange(false)}
+              disabled={loading || success}
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" size="lg" disabled={loading}>
-              {loading ? "Logging..." : "Log"}
+            <Button 
+              type="submit" 
+              className={`flex-1 transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
+              size="lg" 
+              disabled={loading || success}
+            >
+              {success ? "✓ Logged!" : loading ? "Logging..." : "Log"}
             </Button>
           </div>
         </form>

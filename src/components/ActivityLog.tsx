@@ -282,7 +282,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   return (
                     <Card 
                       key={item.id} 
-                      className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                      className="p-3 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
                       onClick={() => setEditingLog(item)}
                     >
                       <div className="flex items-start gap-3">
@@ -376,7 +376,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                       {waitProgress?.isReady && item.type === "medication" && (
                         <Button
                           size="sm"
-                          className="w-full mt-2 h-8 text-xs"
+                          className="w-full mt-2 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                           onClick={(e) => {
                             e.stopPropagation();
                             setLogAgainItem(item);

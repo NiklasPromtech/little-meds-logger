@@ -75,7 +75,7 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-50">
         <Button
           size="lg"
-          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all"
+          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
           onClick={() => setShowMedicationSheet(true)}
         >
           <Pill className="h-5 w-5 mr-2" />
@@ -84,7 +84,7 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
         
         <Button
           size="lg"
-          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all"
+          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
           variant="secondary"
           onClick={() => setShowMeasurementSheet(true)}
         >
