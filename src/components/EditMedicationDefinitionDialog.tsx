@@ -111,10 +111,10 @@ export function EditMedicationDefinitionDialog({
               id="waitHours"
               type="number"
               min="0"
-              step="0.5"
+              step="0.25"
               value={waitHours}
               onChange={(e) => setWaitHours(e.target.value)}
-              placeholder="e.g., 4 or 6"
+              placeholder="e.g., 4, 3.5, or 0.25"
             />
             <p className="text-xs text-muted-foreground mt-1">
               Optional: Minimum hours to wait before next dose
