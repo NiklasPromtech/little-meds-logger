@@ -183,6 +183,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          wait_hours: number | null
         }
         Insert: {
           child_id: string
@@ -191,6 +192,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          wait_hours?: number | null
         }
         Update: {
           child_id?: string
@@ -199,6 +201,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          wait_hours?: number | null
         }
         Relationships: [
           {

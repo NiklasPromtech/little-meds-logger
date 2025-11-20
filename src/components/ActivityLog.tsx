@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Pill, Pencil, Trash2 } from "lucide-react";
+import { Pill, Pencil, Trash2, Clock } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
@@ -24,6 +24,7 @@ interface Medication {
   id: string;
   name: string;
   dosage: string | null;
+  wait_hours: number | null;
 }
 
 interface Measurement {
@@ -42,6 +43,8 @@ interface ActivityItem {
   notes?: string;
   medication_id?: string;
   measurement_id?: string;
+  wait_hours?: number | null;
+  next_dose_time?: Date | null;
 }
 
 interface ChildData {
@@ -97,7 +100,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
     try {
       const { data: medLogs } = await supabase
         .from("medication_logs")
-        .select("id, given_at, quantity, notes, medication_id, medications(name, dosage)")
+        .select("id, given_at, quantity, notes, medication_id, medications(name, dosage, wait_hours)")
         .eq("medications.child_id", childId)
         .order("given_at", { ascending: false })
         .limit(50);
@@ -110,15 +113,24 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
         .limit(50);
 
       const combined: ActivityItem[] = [
-        ...(medLogs || []).map((log: any) => ({
-          id: log.id,
-          type: "medication" as const,
-          name: log.medications?.name || "Unknown",
-          timestamp: log.given_at,
-          quantity: log.quantity,
-          notes: log.notes,
-          medication_id: log.medication_id,
-        })),
+        ...(medLogs || []).map((log: any) => {
+          const waitHours = log.medications?.wait_hours;
+          const nextDoseTime = waitHours 
+            ? new Date(new Date(log.given_at).getTime() + waitHours * 60 * 60 * 1000)
+            : null;
+          
+          return {
+            id: log.id,
+            type: "medication" as const,
+            name: log.medications?.name || "Unknown",
+            timestamp: log.given_at,
+            quantity: log.quantity,
+            notes: log.notes,
+            medication_id: log.medication_id,
+            wait_hours: waitHours,
+            next_dose_time: nextDoseTime,
+          };
+        }),
         ...(measLogs || []).map((log: any) => ({
           id: log.id,
           type: "measurement" as const,
@@ -156,6 +168,23 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
     } finally {
       setDeleteLog(null);
     }
+  };
+
+  const getTimeUntilNextDose = (nextDoseTime: Date | null) => {
+    if (!nextDoseTime) return null;
+    
+    const now = new Date();
+    const diff = nextDoseTime.getTime() - now.getTime();
+    
+    if (diff <= 0) return "Ready now";
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `Wait ${hours}h ${minutes}m`;
+    }
+    return `Wait ${minutes}m`;
   };
 
   if (loading) {
@@ -221,54 +250,67 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
               </Card>
             ) : (
               <div className="space-y-2">
-                {activity.map((item) => (
-                  <Card key={item.id} className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <p className="font-semibold">{item.name}</p>
-                        {item.quantity && (
-                          <p className="text-sm text-muted-foreground">
-                            Quantity: {item.quantity}
-                          </p>
-                        )}
-                        {item.value && (
-                          <p className="text-sm text-muted-foreground">
-                            Value: {item.value}
-                          </p>
-                        )}
-                        {item.notes && (
-                          <p className="text-sm text-muted-foreground italic mt-1">
-                            {item.notes}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-right mr-2">
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(item.timestamp), "MMM d")}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(item.timestamp), "h:mm a")}
-                          </p>
+                {activity.map((item) => {
+                  const timeUntil = item.next_dose_time ? getTimeUntilNextDose(item.next_dose_time) : null;
+                  const isReady = timeUntil === "Ready now";
+                  
+                  return (
+                    <Card key={item.id} className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-semibold">{item.name}</p>
+                          {item.quantity && (
+                            <p className="text-sm text-muted-foreground">
+                              Quantity: {item.quantity}
+                            </p>
+                          )}
+                          {item.value && (
+                            <p className="text-sm text-muted-foreground">
+                              Value: {item.value}
+                            </p>
+                          )}
+                          {timeUntil && (
+                            <div className={`flex items-center gap-1 text-sm mt-1 ${
+                              isReady ? "text-primary font-medium" : "text-muted-foreground"
+                            }`}>
+                              <Clock className="h-3 w-3" />
+                              <span>{timeUntil}</span>
+                            </div>
+                          )}
+                          {item.notes && (
+                            <p className="text-sm text-muted-foreground italic mt-1">
+                              {item.notes}
+                            </p>
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingLog(item)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeleteLog({ id: item.id, type: item.type })}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <div className="text-right mr-2">
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(item.timestamp), "MMM d")}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(item.timestamp), "h:mm a")}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingLog(item)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteLog({ id: item.id, type: item.type })}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
