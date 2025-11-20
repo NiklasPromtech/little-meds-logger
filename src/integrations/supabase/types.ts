@@ -19,6 +19,7 @@ export type Database = {
           child_id: string
           created_at: string
           id: string
+          invited_email: string | null
           shared_by: string
           user_id: string
         }
@@ -26,6 +27,7 @@ export type Database = {
           child_id: string
           created_at?: string
           id?: string
+          invited_email?: string | null
           shared_by: string
           user_id: string
         }
@@ -33,6 +35,7 @@ export type Database = {
           child_id?: string
           created_at?: string
           id?: string
+          invited_email?: string | null
           shared_by?: string
           user_id?: string
         }
