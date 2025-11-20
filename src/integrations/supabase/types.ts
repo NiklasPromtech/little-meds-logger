@@ -180,6 +180,7 @@ export type Database = {
       }
       medications: {
         Row: {
+          accurate_medical_name: string | null
           child_id: string
           created_at: string
           dosage: string | null
@@ -189,6 +190,7 @@ export type Database = {
           wait_hours: number | null
         }
         Insert: {
+          accurate_medical_name?: string | null
           child_id: string
           created_at?: string
           dosage?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           wait_hours?: number | null
         }
         Update: {
+          accurate_medical_name?: string | null
           child_id?: string
           created_at?: string
           dosage?: string | null

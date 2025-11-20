@@ -9,6 +9,7 @@ import { LogMeasurementDialog } from "./LogMeasurementDialog";
 interface Medication {
   id: string;
   name: string;
+  accurate_medical_name: string | null;
   dosage: string | null;
   wait_hours: number | null;
 }

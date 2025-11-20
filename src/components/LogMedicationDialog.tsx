@@ -16,6 +16,7 @@ import { Minus, Plus } from "lucide-react";
 interface Medication {
   id: string;
   name: string;
+  accurate_medical_name: string | null;
   dosage: string | null;
 }
 
