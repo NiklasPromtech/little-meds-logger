@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pill, TrendingUp, Trash2, Share2 } from "lucide-react";
+import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
+import { EditMedicationDefinitionDialog } from "./EditMedicationDefinitionDialog";
+import { EditMeasurementDefinitionDialog } from "./EditMeasurementDefinitionDialog";
 import { ShareChildDialog } from "./ShareChildDialog";
 import {
   AlertDialog,
@@ -24,6 +26,7 @@ interface Medication {
   name: string;
   dosage: string | null;
   notes: string | null;
+  wait_hours: number | null;
 }
 
 interface Measurement {
@@ -51,6 +54,8 @@ export function ManageItems({ childId, child, onUpdate }: ManageItemsProps) {
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
   const [deleteItem, setDeleteItem] = useState<{ id: string; type: string; name: string } | null>(null);
   const [showDeleteChild, setShowDeleteChild] = useState(false);
   const { toast } = useToast();
@@ -142,24 +147,38 @@ export function ManageItems({ childId, child, onUpdate }: ManageItemsProps) {
             {medications.map((med) => (
               <Card key={med.id} className="p-4">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold">{med.name}</h4>
                     {med.dosage && (
                       <p className="text-sm text-muted-foreground">{med.dosage}</p>
+                    )}
+                    {med.wait_hours && (
+                      <p className="text-sm text-muted-foreground">
+                        Wait: {med.wait_hours} hours between doses
+                      </p>
                     )}
                     {med.notes && (
                       <p className="text-sm text-muted-foreground mt-1">{med.notes}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setDeleteItem({ id: med.id, type: "medication", name: med.name })
-                    }
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingMedication(med)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setDeleteItem({ id: med.id, type: "medication", name: med.name })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -188,21 +207,30 @@ export function ManageItems({ childId, child, onUpdate }: ManageItemsProps) {
             {measurements.map((meas) => (
               <Card key={meas.id} className="p-4">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-semibold">{meas.name}</h4>
                     {meas.unit && (
                       <p className="text-sm text-muted-foreground">Unit: {meas.unit}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setDeleteItem({ id: meas.id, type: "measurement", name: meas.name })
-                    }
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingMeasurement(meas)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        setDeleteItem({ id: meas.id, type: "measurement", name: meas.name })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -249,6 +277,30 @@ export function ManageItems({ childId, child, onUpdate }: ManageItemsProps) {
         onOpenChange={setShowShareDialog}
         child={child}
       />
+
+      {editingMedication && (
+        <EditMedicationDefinitionDialog
+          open={!!editingMedication}
+          onOpenChange={(open) => !open && setEditingMedication(null)}
+          medication={editingMedication}
+          onMedicationUpdated={() => {
+            fetchData();
+            setEditingMedication(null);
+          }}
+        />
+      )}
+
+      {editingMeasurement && (
+        <EditMeasurementDefinitionDialog
+          open={!!editingMeasurement}
+          onOpenChange={(open) => !open && setEditingMeasurement(null)}
+          measurement={editingMeasurement}
+          onMeasurementUpdated={() => {
+            fetchData();
+            setEditingMeasurement(null);
+          }}
+        />
+      )}
 
       <AlertDialog open={!!deleteItem} onOpenChange={() => setDeleteItem(null)}>
         <AlertDialogContent>

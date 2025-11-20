@@ -13,23 +13,31 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
-interface AddMedicationDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  childId: string;
-  onMedicationAdded: () => void;
+interface Medication {
+  id: string;
+  name: string;
+  dosage: string | null;
+  notes: string | null;
+  wait_hours: number | null;
 }
 
-export function AddMedicationDialog({
+interface EditMedicationDefinitionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  medication: Medication;
+  onMedicationUpdated: () => void;
+}
+
+export function EditMedicationDefinitionDialog({
   open,
   onOpenChange,
-  childId,
-  onMedicationAdded,
-}: AddMedicationDialogProps) {
-  const [name, setName] = useState("");
-  const [dosage, setDosage] = useState("");
-  const [notes, setNotes] = useState("");
-  const [waitHours, setWaitHours] = useState("");
+  medication,
+  onMedicationUpdated,
+}: EditMedicationDefinitionDialogProps) {
+  const [name, setName] = useState(medication.name);
+  const [dosage, setDosage] = useState(medication.dosage || "");
+  const [notes, setNotes] = useState(medication.notes || "");
+  const [waitHours, setWaitHours] = useState(medication.wait_hours?.toString() || "");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -39,23 +47,21 @@ export function AddMedicationDialog({
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("medications").insert({
-        child_id: childId,
-        name: name.trim(),
-        dosage: dosage.trim() || null,
-        notes: notes.trim() || null,
-        wait_hours: waitHours ? parseInt(waitHours) : null,
-      });
+      const { error } = await supabase
+        .from("medications")
+        .update({
+          name: name.trim(),
+          dosage: dosage.trim() || null,
+          notes: notes.trim() || null,
+          wait_hours: waitHours ? parseInt(waitHours) : null,
+        })
+        .eq("id", medication.id);
 
       if (error) throw error;
 
-      toast({ title: "Medication added successfully!" });
-      setName("");
-      setDosage("");
-      setNotes("");
-      setWaitHours("");
+      toast({ title: "Medication updated!" });
       onOpenChange(false);
-      onMedicationAdded();
+      onMedicationUpdated();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -71,9 +77,9 @@ export function AddMedicationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Medication</DialogTitle>
+          <DialogTitle>Edit Medication</DialogTitle>
           <DialogDescription>
-            Add a new medication to track for this child
+            Update medication details
           </DialogDescription>
         </DialogHeader>
 
@@ -86,6 +92,16 @@ export function AddMedicationDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Tylenol"
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="dosage">Dosage</Label>
+            <Input
+              id="dosage"
+              value={dosage}
+              onChange={(e) => setDosage(e.target.value)}
+              placeholder="e.g., 5ml or 100mg"
             />
           </div>
 
@@ -103,16 +119,6 @@ export function AddMedicationDialog({
             <p className="text-xs text-muted-foreground mt-1">
               Optional: Minimum hours to wait before next dose
             </p>
-          </div>
-
-          <div>
-            <Label htmlFor="dosage">Dosage</Label>
-            <Input
-              id="dosage"
-              value={dosage}
-              onChange={(e) => setDosage(e.target.value)}
-              placeholder="e.g., 5ml or 100mg"
-            />
           </div>
 
           <div>
@@ -136,7 +142,7 @@ export function AddMedicationDialog({
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "Adding..." : "Add"}
+              {loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>
