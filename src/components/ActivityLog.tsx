@@ -309,7 +309,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                           </div>
                         )}
                         
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-baseline gap-2 flex-wrap">
                             <p className="font-bold text-sm">{item.name}</p>
                             {item.type === "medication" && item.accurate_medical_name && (
@@ -326,24 +326,25 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                             {item.value && (
                               <span className="text-xs font-medium text-muted-foreground">{item.value}</span>
                             )}
+                            {waitProgress && (
+                              <p className={`text-xs font-medium ${
+                                waitProgress.isReady ? "text-primary" : "text-muted-foreground"
+                              }`}>
+                                {waitProgress.isReady ? "✓ Ready" : timeUntil}
+                              </p>
+                            )}
                           </div>
                           
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                            <span className="font-medium">{timeSince}</span>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{timeSince}</span>
                             <span>•</span>
-                            <span>{shortDate} {time}</span>
+                            <span>{shortDate}</span>
+                            <span>•</span>
+                            <span>{time}</span>
                           </div>
-                          
-                          {waitProgress && (
-                            <p className={`text-xs mt-1 font-medium ${
-                              waitProgress.isReady ? "text-primary" : "text-muted-foreground"
-                            }`}>
-                              {waitProgress.isReady ? "✓ Ready now" : timeUntil}
-                            </p>
-                          )}
                           
                           {item.notes && (
-                            <p className="text-xs text-muted-foreground italic mt-1 truncate">
+                            <p className="text-xs text-muted-foreground italic truncate">
                               {item.notes}
                             </p>
                           )}
