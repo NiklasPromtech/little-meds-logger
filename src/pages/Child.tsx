@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
 import { ChildSettingsSheet } from "@/components/ChildSettingsSheet";
@@ -19,7 +18,6 @@ interface ChildData {
 const Child = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [child, setChild] = useState<ChildData | null>(null);
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -44,11 +42,7 @@ const Child = () => {
       setChild(data);
       updateFavicon(data);
     } catch (error: any) {
-      toast({
-        title: "Error loading child",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error loading child:", error);
       navigate("/dashboard");
     } finally {
       setLoading(false);

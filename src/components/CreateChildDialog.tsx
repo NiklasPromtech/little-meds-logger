@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface CreateChildDialogProps {
   open: boolean;
@@ -37,7 +36,6 @@ export function CreateChildDialog({
   const [name, setName] = useState("");
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const generateInitials = (fullName: string) => {
     const words = fullName.trim().split(" ");
@@ -66,17 +64,12 @@ export function CreateChildDialog({
 
       if (error) throw error;
 
-      toast({ title: "Child added successfully!" });
       setName("");
       setSelectedColor(COLORS[0]);
       onOpenChange(false);
       onChildCreated();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error creating child:", error);
     } finally {
       setLoading(false);
     }

@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface ChildData {
   id: string;
@@ -32,7 +31,6 @@ export function ShareChildDialog({
 }: ShareChildDialogProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleShare = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,11 +43,7 @@ export function ShareChildDialog({
         .rpc('get_user_id_by_email', { user_email: email.toLowerCase().trim() });
 
       if (userError || !userId) {
-        toast({
-          title: "User not found",
-          description: "No user found with that email address. They need to create an account first.",
-          variant: "destructive",
-        });
+        console.error("User not found");
         return;
       }
 
@@ -65,11 +59,7 @@ export function ShareChildDialog({
         .maybeSingle();
 
       if (existingShare) {
-        toast({
-          title: "Already shared",
-          description: "This user already has access to this child",
-          variant: "destructive",
-        });
+        console.log("Already shared with this user");
         return;
       }
 
@@ -81,15 +71,10 @@ export function ShareChildDialog({
 
       if (error) throw error;
 
-      toast({ title: "Access shared successfully!" });
       setEmail("");
       onOpenChange(false);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error sharing access:", error);
     } finally {
       setLoading(false);
     }

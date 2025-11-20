@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 
 interface Measurement {
   id: string;
@@ -34,7 +33,6 @@ export function EditMeasurementDefinitionDialog({
   const [name, setName] = useState(measurement.name);
   const [unit, setUnit] = useState(measurement.unit || "");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,15 +50,10 @@ export function EditMeasurementDefinitionDialog({
 
       if (error) throw error;
 
-      toast({ title: "Measurement updated!" });
       onOpenChange(false);
       onMeasurementUpdated();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error updating measurement:", error);
     } finally {
       setLoading(false);
     }

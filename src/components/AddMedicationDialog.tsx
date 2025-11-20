@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 
 interface AddMedicationDialogProps {
   open: boolean;
@@ -32,7 +31,6 @@ export function AddMedicationDialog({
   const [notes, setNotes] = useState("");
   const [waitHours, setWaitHours] = useState("");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +49,6 @@ export function AddMedicationDialog({
 
       if (error) throw error;
 
-      toast({ title: "Medication added successfully!" });
       setName("");
       setAccurateMedicalName("");
       setDosage("");
@@ -60,11 +57,7 @@ export function AddMedicationDialog({
       onOpenChange(false);
       onMedicationAdded();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error adding medication:", error);
     } finally {
       setLoading(false);
     }

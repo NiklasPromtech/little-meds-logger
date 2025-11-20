@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 interface ActivityItem {
@@ -62,7 +61,6 @@ export function EditMedicationLogDialog({
   const [waitHours, setWaitHours] = useState<number | string>(log.wait_hours || "");
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Format the timestamp for datetime-local input
@@ -95,11 +93,7 @@ export function EditMedicationLogDialog({
       onOpenChange(false);
       onLogUpdated();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error updating log:", error);
     } finally {
       setLoading(false);
     }
@@ -114,15 +108,10 @@ export function EditMedicationLogDialog({
 
       if (error) throw error;
 
-      toast({ title: "Log deleted" });
       onOpenChange(false);
       onDelete?.();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error deleting log:", error);
     }
   };
 

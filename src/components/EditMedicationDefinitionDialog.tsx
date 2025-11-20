@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 
 interface Medication {
   id: string;
@@ -41,7 +40,6 @@ export function EditMedicationDefinitionDialog({
   const [notes, setNotes] = useState(medication.notes || "");
   const [waitHours, setWaitHours] = useState(medication.wait_hours?.toString() || "");
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,15 +60,10 @@ export function EditMedicationDefinitionDialog({
 
       if (error) throw error;
 
-      toast({ title: "Medication updated!" });
       onOpenChange(false);
       onMedicationUpdated();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Error updating medication:", error);
     } finally {
       setLoading(false);
     }

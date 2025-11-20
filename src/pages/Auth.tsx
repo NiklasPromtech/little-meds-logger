@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Heart } from "lucide-react";
 
 const Auth = () => {
@@ -15,7 +14,6 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,7 +42,6 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        toast({ title: "Welcome back!" });
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -55,14 +52,9 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast({ title: "Account created! Welcome to KidCare." });
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Auth error:", error);
     } finally {
       setLoading(false);
     }

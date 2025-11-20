@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Pill, RotateCcw } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
@@ -61,7 +60,6 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
   const [filter, setFilter] = useState<"all" | "medication" | "health">("all");
-  const { toast } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -406,7 +404,6 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
             fetchActivity();
             setLogAgainItem(null);
             onActivityUpdate?.();
-            toast({ title: "Medication logged!" });
           }}
         />
       )}
@@ -420,7 +417,6 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
             fetchActivity();
             setLogAgainItem(null);
             onActivityUpdate?.();
-            toast({ title: "Measurement logged!" });
           }}
         />
       )}
@@ -434,7 +430,6 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
             fetchActivity();
             setEditingLog(null);
             onActivityUpdate?.();
-            toast({ title: "Log updated!" });
           }}
           onDelete={() => {
             fetchActivity();
@@ -453,7 +448,6 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
             fetchActivity();
             setEditingLog(null);
             onActivityUpdate?.();
-            toast({ title: "Log updated!" });
           }}
           onDelete={() => {
             fetchActivity();
