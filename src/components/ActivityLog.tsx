@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Pill, Pencil, Trash2, Clock } from "lucide-react";
+import { Pill, Pencil, Trash2 } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
@@ -187,6 +187,23 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
     return `Wait ${minutes}m`;
   };
 
+  const getWaitProgress = (timestamp: string, nextDoseTime: Date | null, waitHours: number | null) => {
+    if (!nextDoseTime || !waitHours) return null;
+    
+    const givenTime = new Date(timestamp).getTime();
+    const nextTime = nextDoseTime.getTime();
+    const now = new Date().getTime();
+    
+    const totalWait = nextTime - givenTime;
+    const elapsed = now - givenTime;
+    const percentage = Math.min(100, Math.max(0, (elapsed / totalWait) * 100));
+    
+    return {
+      percentage,
+      isReady: percentage >= 100,
+    };
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading...</div>;
   }
@@ -252,11 +269,13 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
               <div className="space-y-2">
                 {activity.map((item) => {
                   const timeUntil = item.next_dose_time ? getTimeUntilNextDose(item.next_dose_time) : null;
-                  const isReady = timeUntil === "Ready now";
+                  const waitProgress = item.wait_hours && item.next_dose_time
+                    ? getWaitProgress(item.timestamp, item.next_dose_time, item.wait_hours)
+                    : null;
                   
                   return (
                     <Card key={item.id} className="p-4">
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <p className="font-semibold">{item.name}</p>
                           {item.quantity && (
@@ -268,14 +287,6 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                             <p className="text-sm text-muted-foreground">
                               Value: {item.value}
                             </p>
-                          )}
-                          {timeUntil && (
-                            <div className={`flex items-center gap-1 text-sm mt-1 ${
-                              isReady ? "text-primary font-medium" : "text-muted-foreground"
-                            }`}>
-                              <Clock className="h-3 w-3" />
-                              <span>{timeUntil}</span>
-                            </div>
                           )}
                           {item.notes && (
                             <p className="text-sm text-muted-foreground italic mt-1">
@@ -308,6 +319,33 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                           </Button>
                         </div>
                       </div>
+                      
+                      {waitProgress && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className={waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"}>
+                              {waitProgress.isReady ? "Can take next dose" : timeUntil}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {Math.round(waitProgress.percentage)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-1000 ${
+                                waitProgress.isReady
+                                  ? "bg-primary animate-pulse"
+                                  : "bg-accent"
+                              }`}
+                              style={{ width: `${waitProgress.percentage}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Just took</span>
+                            <span>Ready</span>
+                          </div>
+                        </div>
+                      )}
                     </Card>
                   );
                 })}
