@@ -12,8 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Minus, Plus } from "lucide-react";
-import { offlineQueue } from "@/lib/offlineQueue";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 interface Medication {
   id: string;
@@ -39,7 +37,6 @@ export function LogMedicationDialog({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const isOnline = useOnlineStatus();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,28 +47,13 @@ export function LogMedicationDialog({
       if (!user) throw new Error("Not authenticated");
 
       const quantityText = `${quantity}x`;
-      const logData = {
+      
+      const { error } = await supabase.from("medication_logs").insert({
         medication_id: medication.id,
         given_by: user.id,
         quantity: quantityText,
         notes: notes.trim() || null,
-      };
-
-      if (!isOnline) {
-        // Queue for offline sync
-        offlineQueue.add("medication", logData);
-        toast({
-          title: "Saved offline",
-          description: "Log will sync when you're back online",
-        });
-        setQuantity(1);
-        setNotes("");
-        onOpenChange(false);
-        onLogAdded();
-        return;
-      }
-      
-      const { error } = await supabase.from("medication_logs").insert(logData);
+      });
 
       if (error) throw error;
 

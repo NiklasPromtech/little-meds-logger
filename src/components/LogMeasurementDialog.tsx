@@ -12,8 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { offlineQueue } from "@/lib/offlineQueue";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 interface Measurement {
   id: string;
@@ -38,7 +36,6 @@ export function LogMeasurementDialog({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const isOnline = useOnlineStatus();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,28 +56,12 @@ export function LogMeasurementDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const logData = {
+      const { error } = await supabase.from("measurement_logs").insert({
         measurement_id: measurement.id,
         value: numValue,
         recorded_by: user.id,
         notes: notes.trim() || null,
-      };
-
-      if (!isOnline) {
-        // Queue for offline sync
-        offlineQueue.add("measurement", logData);
-        toast({
-          title: "Saved offline",
-          description: "Log will sync when you're back online",
-        });
-        setValue("");
-        setNotes("");
-        onOpenChange(false);
-        onLogAdded();
-        return;
-      }
-
-      const { error } = await supabase.from("measurement_logs").insert(logData);
+      });
 
       if (error) throw error;
 

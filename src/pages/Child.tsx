@@ -7,7 +7,6 @@ import { ArrowLeft, Settings2 } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
 import { ChildSettingsSheet } from "@/components/ChildSettingsSheet";
 import { QuickLogFAB } from "@/components/QuickLogFAB";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 interface ChildData {
   id: string;
@@ -95,9 +94,7 @@ const Child = () => {
   if (!child) return null;
 
   return (
-    <>
-      <OfflineIndicator />
-      <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24">
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
@@ -136,8 +133,7 @@ const Child = () => {
         child={child}
         onUpdate={fetchChild}
       />
-      </div>
-    </>
+    </div>
   );
 };
 
