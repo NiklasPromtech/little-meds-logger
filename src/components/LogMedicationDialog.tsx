@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Minus, Plus } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -32,7 +32,7 @@ export function LogMedicationDialog({
   medication,
   onLogAdded,
 }: LogMedicationDialogProps) {
-  const [quantity, setQuantity] = useState(medication.dosage || "");
+  const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -45,16 +45,18 @@ export function LogMedicationDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const quantityText = `${quantity}x`;
+      
       const { error } = await supabase.from("medication_logs").insert({
         medication_id: medication.id,
         given_by: user.id,
-        quantity: quantity.trim() || null,
+        quantity: quantityText,
         notes: notes.trim() || null,
       });
 
       if (error) throw error;
 
-      setQuantity(medication.dosage || "");
+      setQuantity(1);
       setNotes("");
       onOpenChange(false);
       onLogAdded();
@@ -69,28 +71,54 @@ export function LogMedicationDialog({
     }
   };
 
+  const increment = () => setQuantity(q => Math.min(q + 1, 99));
+  const decrement = () => setQuantity(q => Math.max(q - 1, 1));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Log: {medication.name}</DialogTitle>
+          <DialogTitle>{medication.name}</DialogTitle>
           <DialogDescription>
-            Record when you gave this medication
+            {medication.dosage || "Log medication"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input
-              id="quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="e.g., 2 puffs, 5ml"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              How much did you give?
-            </p>
+            <Label className="mb-3 block text-center">How many times?</Label>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={decrement}
+                disabled={quantity <= 1}
+                className="h-16 w-16 rounded-full"
+              >
+                <Minus className="h-6 w-6" />
+              </Button>
+              
+              <div className="text-center min-w-[120px]">
+                <div className="text-5xl font-bold text-primary">{quantity}x</div>
+                {medication.dosage && (
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {medication.dosage}
+                  </div>
+                )}
+              </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={increment}
+                disabled={quantity >= 99}
+                className="h-16 w-16 rounded-full"
+              >
+                <Plus className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
 
           <div>
@@ -113,7 +141,7 @@ export function LogMedicationDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={loading}>
+            <Button type="submit" className="flex-1" size="lg" disabled={loading}>
               {loading ? "Logging..." : "Log"}
             </Button>
           </div>
