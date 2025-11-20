@@ -309,42 +309,47 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                           </div>
                         )}
                         
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-baseline gap-2 flex-wrap">
-                            <p className="font-bold text-sm">{item.name}</p>
-                            {item.type === "medication" && item.accurate_medical_name && (
-                              <span className="text-xs text-muted-foreground">
-                                {item.accurate_medical_name}
-                              </span>
-                            )}
-                            {item.type === "medication" && item.dosage && (
-                              <span className="text-xs text-muted-foreground">{item.dosage}</span>
-                            )}
-                            {item.quantity && (
-                              <span className="text-xs text-muted-foreground">Qty: {item.quantity}</span>
-                            )}
-                            {item.value && (
-                              <span className="text-xs font-medium text-muted-foreground">{item.value}</span>
-                            )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline justify-between gap-2">
+                            <p className="font-semibold text-sm truncate">{item.name}</p>
                             {waitProgress && (
-                              <p className={`text-xs font-medium ${
+                              <span className={`text-xs font-medium flex-shrink-0 ${
                                 waitProgress.isReady ? "text-primary" : "text-muted-foreground"
                               }`}>
-                                {waitProgress.isReady ? "✓ Ready" : timeUntil}
-                              </p>
+                                {waitProgress.isReady ? "Ready" : timeUntil}
+                              </span>
                             )}
                           </div>
                           
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {item.type === "medication" && item.accurate_medical_name && (
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {item.accurate_medical_name}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                            {item.type === "medication" && item.dosage && (
+                              <span>{item.dosage}</span>
+                            )}
+                            {item.quantity && (
+                              <>
+                                {item.dosage && <span>•</span>}
+                                <span>Qty: {item.quantity}</span>
+                              </>
+                            )}
+                            {item.value && (
+                              <span className="font-medium">{item.value}</span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                             <span>{timeSince}</span>
                             <span>•</span>
-                            <span>{shortDate}</span>
-                            <span>•</span>
-                            <span>{time}</span>
+                            <span>{shortDate} {time}</span>
                           </div>
                           
                           {item.notes && (
-                            <p className="text-xs text-muted-foreground italic truncate">
+                            <p className="text-xs text-muted-foreground italic mt-1 truncate">
                               {item.notes}
                             </p>
                           )}
