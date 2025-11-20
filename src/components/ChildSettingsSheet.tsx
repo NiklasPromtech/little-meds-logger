@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User } from "lucide-react";
+import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
 import { EditMedicationDefinitionDialog } from "./EditMedicationDefinitionDialog";
@@ -52,6 +52,14 @@ interface ChildData {
   created_by: string;
 }
 
+interface SharedUser {
+  id: string;
+  user_id: string;
+  profiles?: {
+    full_name: string | null;
+  };
+}
+
 interface ChildSettingsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -74,6 +82,7 @@ export function ChildSettingsSheet({
 }: ChildSettingsSheetProps) {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [sharedUsers, setSharedUsers] = useState<SharedUser[]>([]);
   const [childName, setChildName] = useState(child.name);
   const [childColor, setChildColor] = useState(child.color);
   const [showAddMedication, setShowAddMedication] = useState(false);
@@ -106,8 +115,30 @@ export function ChildSettingsSheet({
       .eq("child_id", childId)
       .order("name");
 
+    const { data: sharesData } = await supabase
+      .from("child_shares")
+      .select("id, user_id")
+      .eq("child_id", childId);
+
+    // Fetch profile data separately for each shared user
+    const sharesWithProfiles = await Promise.all(
+      (sharesData || []).map(async (share) => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", share.user_id)
+          .single();
+        
+        return {
+          ...share,
+          profiles: profile,
+        };
+      })
+    );
+
     setMedications(medsData || []);
     setMeasurements(measData || []);
+    setSharedUsers(sharesWithProfiles);
   };
 
   const handleUpdateChild = async () => {
@@ -150,6 +181,21 @@ export function ChildSettingsSheet({
       console.error("Error deleting item:", error);
     } finally {
       setDeleteItem(null);
+    }
+  };
+
+  const handleRemoveShare = async (shareId: string) => {
+    try {
+      const { error } = await supabase
+        .from("child_shares")
+        .delete()
+        .eq("id", shareId);
+
+      if (error) throw error;
+
+      fetchData();
+    } catch (error: any) {
+      console.error("Error removing share:", error);
     }
   };
 
@@ -329,17 +375,56 @@ export function ChildSettingsSheet({
 
             <Separator />
 
+            {/* Shared Access Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Share2 className="h-5 w-5" />
+                  Shared With
+                </h3>
+                <Button onClick={() => setShowShareDialog(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+
+              {sharedUsers.length === 0 ? (
+                <Card className="p-6 text-center">
+                  <p className="text-sm text-muted-foreground">Not shared with anyone yet</p>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {sharedUsers.map((share) => (
+                    <Card key={share.id} className="p-3">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {share.profiles?.full_name || "User"}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveShare(share.id)}
+                        >
+                          <UserMinus className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
             {/* Actions Section */}
             <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setShowShareDialog(true)}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Access
-              </Button>
-              
               <Button
                 variant="destructive"
                 className="w-full"
@@ -371,6 +456,7 @@ export function ChildSettingsSheet({
         open={showShareDialog}
         onOpenChange={setShowShareDialog}
         child={child}
+        onShareAdded={fetchData}
       />
 
       {editingMedication && (
