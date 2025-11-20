@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
 import { ChildSettingsSheet } from "@/components/ChildSettingsSheet";
+import { QuickLogFAB } from "@/components/QuickLogFAB";
 
 interface ChildData {
   id: string;
@@ -92,34 +93,37 @@ const Child = () => {
   if (!child) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24">
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between gap-4">
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
+            
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0"
+                style={{ backgroundColor: child.color }}
+              >
+                {child.initials}
+              </div>
+              <h1 className="text-xl font-bold truncate">{child.name}</h1>
+            </div>
+
             <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
               <Settings2 className="h-5 w-5" />
             </Button>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
-              style={{ backgroundColor: child.color }}
-            >
-              {child.initials}
-            </div>
-            <h1 className="text-3xl font-bold">{child.name}</h1>
-          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <ActivityLog childId={id!} child={child} />
+      <main className="container mx-auto px-4 py-6">
+        <ActivityLog childId={id!} child={child} onActivityUpdate={fetchChild} />
       </main>
+
+      <QuickLogFAB childId={id!} onLogComplete={fetchChild} />
 
       <ChildSettingsSheet 
         open={settingsOpen}
