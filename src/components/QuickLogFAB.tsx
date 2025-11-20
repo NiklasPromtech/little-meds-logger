@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Pill, Activity } from "lucide-react";
+import { Pill, Activity, Plus } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
+import { AddMedicationDialog } from "./AddMedicationDialog";
+import { AddMeasurementDialog } from "./AddMeasurementDialog";
 
 interface Medication {
   id: string;
@@ -32,6 +34,8 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
   const [showMeasurementSheet, setShowMeasurementSheet] = useState(false);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
+  const [showAddMedication, setShowAddMedication] = useState(false);
+  const [showAddMeasurement, setShowAddMeasurement] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -70,6 +74,16 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
     onLogComplete?.();
   };
 
+  const handleMedicationAdded = () => {
+    setShowAddMedication(false);
+    fetchData();
+  };
+
+  const handleMeasurementAdded = () => {
+    setShowAddMeasurement(false);
+    fetchData();
+  };
+
   return (
     <>
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-50">
@@ -101,10 +115,10 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <SheetHeader>
             <SheetTitle>Log Medication</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 space-y-2">
+          <div className="mt-6 space-y-2 pb-20">
             {medications.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No medications added yet. Go to Settings to add some.
+                No medications added yet. Add one below to get started.
               </p>
             ) : (
               medications.map((med) => (
@@ -124,6 +138,19 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
               ))
             )}
           </div>
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => {
+                setShowMedicationSheet(false);
+                setShowAddMedication(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Medication
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
 
@@ -135,10 +162,10 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <SheetHeader>
             <SheetTitle>Log Health Tracking</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 space-y-2">
+          <div className="mt-6 space-y-2 pb-20">
             {measurements.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                No health tracking items added yet. Go to Settings to add some.
+                No health tracking items added yet. Add one below to get started.
               </p>
             ) : (
               measurements.map((measure) => (
@@ -157,6 +184,19 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
                 </Button>
               ))
             )}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
+            <Button
+              variant="outline"
+              className="w-full h-12"
+              onClick={() => {
+                setShowMeasurementSheet(false);
+                setShowAddMeasurement(true);
+              }}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Health Measure
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
@@ -178,6 +218,20 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           onLogAdded={handleLogComplete}
         />
       )}
+
+      <AddMedicationDialog
+        open={showAddMedication}
+        onOpenChange={setShowAddMedication}
+        childId={childId}
+        onMedicationAdded={handleMedicationAdded}
+      />
+
+      <AddMeasurementDialog
+        open={showAddMeasurement}
+        onOpenChange={setShowAddMeasurement}
+        childId={childId}
+        onMeasurementAdded={handleMeasurementAdded}
+      />
     </>
   );
 };
