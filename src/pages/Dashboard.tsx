@@ -103,16 +103,19 @@ const Dashboard = () => {
             {children.map((child) => (
               <Card
                 key={child.id}
-                className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                className="group relative p-8 cursor-pointer bg-gradient-to-br from-card to-card/50 border-2 border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 overflow-hidden"
                 onClick={() => navigate(`/child/${child.id}`)}
               >
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-4"
-                  style={{ backgroundColor: child.color }}
-                >
-                  {child.initials}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative z-10">
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white mb-6 shadow-lg ring-4 ring-background/50 group-hover:scale-110 transition-transform duration-300"
+                    style={{ backgroundColor: child.color }}
+                  >
+                    {child.initials}
+                  </div>
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">{child.name}</h3>
                 </div>
-                <h3 className="text-xl font-semibold">{child.name}</h3>
               </Card>
             ))}
           </div>
