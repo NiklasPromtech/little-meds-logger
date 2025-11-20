@@ -57,6 +57,7 @@ interface SharedUser {
   user_id: string;
   profiles?: {
     full_name: string | null;
+    email: string | null;
   };
 }
 
@@ -83,6 +84,7 @@ export function ChildSettingsSheet({
   const [medications, setMedications] = useState<Medication[]>([]);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [sharedUsers, setSharedUsers] = useState<SharedUser[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [childName, setChildName] = useState(child.name);
   const [childColor, setChildColor] = useState(child.color);
   const [showAddMedication, setShowAddMedication] = useState(false);
@@ -99,8 +101,14 @@ export function ChildSettingsSheet({
       fetchData();
       setChildName(child.name);
       setChildColor(child.color);
+      fetchCurrentUser();
     }
   }, [open, childId, child]);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id || null);
+  };
 
   const fetchData = async () => {
     const { data: medsData } = await supabase
@@ -125,7 +133,7 @@ export function ChildSettingsSheet({
       (sharesData || []).map(async (share) => {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, email")
           .eq("id", share.user_id)
           .single();
         
@@ -382,10 +390,12 @@ export function ChildSettingsSheet({
                   <Share2 className="h-5 w-5" />
                   Shared With
                 </h3>
-                <Button onClick={() => setShowShareDialog(true)} size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
+                {currentUserId === child.created_by && (
+                  <Button onClick={() => setShowShareDialog(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                )}
               </div>
 
               {sharedUsers.length === 0 ? (
@@ -405,15 +415,22 @@ export function ChildSettingsSheet({
                             <p className="text-sm font-medium">
                               {share.profiles?.full_name || "User"}
                             </p>
+                            {share.profiles?.email && (
+                              <p className="text-xs text-muted-foreground">
+                                {share.profiles.email}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveShare(share.id)}
-                        >
-                          <UserMinus className="h-4 w-4 text-destructive" />
-                        </Button>
+                        {currentUserId === child.created_by && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveShare(share.id)}
+                          >
+                            <UserMinus className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </div>
                     </Card>
                   ))}
