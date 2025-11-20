@@ -60,7 +60,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   const [loading, setLoading] = useState(true);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
-  const [filter, setFilter] = useState<"all" | "medication" | "measurement">("all");
+  const [filter, setFilter] = useState<"all" | "medication" | "health">("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -216,9 +216,11 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   }
 
   const hasItems = medications.length > 0 || measurements.length > 0;
-  const filteredActivity = activity.filter(item => 
-    filter === "all" || item.type === filter
-  );
+  const filteredActivity = activity.filter(item => {
+    if (filter === "all") return true;
+    if (filter === "health") return item.type === "measurement";
+    return item.type === filter;
+  });
 
   return (
     <div className="space-y-6">
@@ -255,8 +257,8 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
               </Button>
               <Button
                 size="sm"
-                variant={filter === "measurement" ? "default" : "ghost"}
-                onClick={() => setFilter("measurement")}
+                variant={filter === "health" ? "default" : "ghost"}
+                onClick={() => setFilter("health")}
                 className="text-xs h-7 px-3"
               >
                 Health
