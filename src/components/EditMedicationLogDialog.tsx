@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -8,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +20,7 @@ interface ActivityItem {
   name: string;
   quantity?: string;
   notes?: string;
+  timestamp: string;
 }
 
 interface EditMedicationLogDialogProps {
@@ -41,8 +44,16 @@ export function EditMedicationLogDialog({
 
   const [quantity, setQuantity] = useState(parseQuantity(log.quantity));
   const [notes, setNotes] = useState(log.notes || "");
+  const [givenAt, setGivenAt] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Format the timestamp for datetime-local input
+    const date = new Date(log.timestamp);
+    const formatted = format(date, "yyyy-MM-dd'T'HH:mm");
+    setGivenAt(formatted);
+  }, [log.timestamp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +67,7 @@ export function EditMedicationLogDialog({
         .update({
           quantity: quantityText,
           notes: notes.trim() || null,
+          given_at: new Date(givenAt).toISOString(),
         })
         .eq("id", log.id);
 
@@ -117,6 +129,20 @@ export function EditMedicationLogDialog({
                 <Plus className="h-6 w-6" />
               </Button>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="givenAt">Time Given</Label>
+            <Input
+              id="givenAt"
+              type="datetime-local"
+              value={givenAt}
+              onChange={(e) => setGivenAt(e.target.value)}
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Adjust when the medication was actually given
+            </p>
           </div>
 
           <div>

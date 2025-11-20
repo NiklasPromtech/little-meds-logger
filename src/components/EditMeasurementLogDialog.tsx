@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ interface ActivityItem {
   name: string;
   value?: string;
   notes?: string;
+  timestamp: string;
 }
 
 interface EditMeasurementLogDialogProps {
@@ -41,8 +43,16 @@ export function EditMeasurementLogDialog({
 
   const [value, setValue] = useState(parseValue(log.value));
   const [notes, setNotes] = useState(log.notes || "");
+  const [recordedAt, setRecordedAt] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Format the timestamp for datetime-local input
+    const date = new Date(log.timestamp);
+    const formatted = format(date, "yyyy-MM-dd'T'HH:mm");
+    setRecordedAt(formatted);
+  }, [log.timestamp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +75,7 @@ export function EditMeasurementLogDialog({
         .update({
           value: numValue,
           notes: notes.trim() || null,
+          recorded_at: new Date(recordedAt).toISOString(),
         })
         .eq("id", log.id);
 
@@ -105,6 +116,20 @@ export function EditMeasurementLogDialog({
               placeholder="Enter value"
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="recordedAt">Time Recorded</Label>
+            <Input
+              id="recordedAt"
+              type="datetime-local"
+              value={recordedAt}
+              onChange={(e) => setRecordedAt(e.target.value)}
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Adjust when the measurement was actually taken
+            </p>
           </div>
 
           <div>
