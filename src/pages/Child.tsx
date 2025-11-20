@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, Settings2 } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
-import { ManageItems } from "@/components/ManageItems";
-import { QuickLogFAB } from "@/components/QuickLogFAB";
+import { ChildSettingsSheet } from "@/components/ChildSettingsSheet";
 
 interface ChildData {
   id: string;
@@ -23,6 +21,7 @@ const Child = () => {
   const { toast } = useToast();
   const [child, setChild] = useState<ChildData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -93,13 +92,16 @@ const Child = () => {
   if (!child) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
+              <Settings2 className="h-5 w-5" />
             </Button>
           </div>
           
@@ -116,26 +118,16 @@ const Child = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="log" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="log">Activity Log</TabsTrigger>
-            <TabsTrigger value="manage">
-              <Settings className="h-4 w-4 mr-2" />
-              Manage
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="log">
-            <ActivityLog childId={id!} child={child} />
-          </TabsContent>
-
-          <TabsContent value="manage">
-            <ManageItems childId={id!} child={child} onUpdate={fetchChild} />
-          </TabsContent>
-        </Tabs>
+        <ActivityLog childId={id!} child={child} />
       </main>
 
-      <QuickLogFAB childId={id!} onLogComplete={fetchChild} />
+      <ChildSettingsSheet 
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        childId={id!}
+        child={child}
+        onUpdate={fetchChild}
+      />
     </div>
   );
 };
