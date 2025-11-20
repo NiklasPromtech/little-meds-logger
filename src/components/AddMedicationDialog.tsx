@@ -1,0 +1,127 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+
+interface AddMedicationDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  childId: string;
+  onMedicationAdded: () => void;
+}
+
+export function AddMedicationDialog({
+  open,
+  onOpenChange,
+  childId,
+  onMedicationAdded,
+}: AddMedicationDialogProps) {
+  const [name, setName] = useState("");
+  const [dosage, setDosage] = useState("");
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("medications").insert({
+        child_id: childId,
+        name: name.trim(),
+        dosage: dosage.trim() || null,
+        notes: notes.trim() || null,
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Medication added successfully!" });
+      setName("");
+      setDosage("");
+      setNotes("");
+      onOpenChange(false);
+      onMedicationAdded();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Medication</DialogTitle>
+          <DialogDescription>
+            Add a new medication to track for this child
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Medication Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Tylenol"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="dosage">Dosage</Label>
+            <Input
+              id="dosage"
+              value={dosage}
+              onChange={(e) => setDosage(e.target.value)}
+              placeholder="e.g., 5ml or 100mg"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="notes">Notes (optional)</Label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any additional information..."
+              rows={3}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={loading}>
+              {loading ? "Adding..." : "Add"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
