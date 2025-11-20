@@ -69,6 +69,7 @@ export function ShareChildDialog({
         child_id: child.id,
         user_id: userId,
         shared_by: user.id,
+        invited_email: email.toLowerCase().trim(),
       });
 
       if (error) throw error;

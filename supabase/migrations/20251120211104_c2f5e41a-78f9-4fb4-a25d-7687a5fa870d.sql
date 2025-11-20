@@ -1,0 +1,1 @@
+ALTER TABLE public.child_shares ADD COLUMN IF NOT EXISTS invited_email TEXT;

@@ -55,10 +55,11 @@ interface ChildData {
 interface SharedUser {
   id: string;
   user_id: string;
+  invited_email: string | null;
   profiles?: {
     full_name: string | null;
     email: string | null;
-  };
+  } | null;
 }
 
 interface ChildSettingsSheetProps {
@@ -125,7 +126,7 @@ export function ChildSettingsSheet({
 
     const { data: sharesData } = await supabase
       .from("child_shares")
-      .select("id, user_id")
+      .select("id, user_id, invited_email")
       .eq("child_id", childId);
 
     // Fetch profile data separately for each shared user
@@ -415,11 +416,9 @@ export function ChildSettingsSheet({
                             <p className="text-sm font-medium">
                               {share.profiles?.full_name || "User"}
                             </p>
-                            {share.profiles?.email && (
-                              <p className="text-xs text-muted-foreground">
-                                {share.profiles.email}
-                              </p>
-                            )}
+                            <p className="text-xs text-muted-foreground">
+                              {share.profiles?.email || share.invited_email || "No email"}
+                            </p>
                           </div>
                         </div>
                         {currentUserId === child.created_by && (
