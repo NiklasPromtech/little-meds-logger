@@ -50,9 +50,10 @@ interface ActivityLogProps {
   childId: string;
   child: ChildData;
   onActivityUpdate?: () => void;
+  refreshTrigger?: number;
 }
 
-export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogProps) {
+export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }: ActivityLogProps) {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
@@ -64,7 +65,7 @@ export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogPro
 
   useEffect(() => {
     fetchData();
-  }, [childId]);
+  }, [childId, refreshTrigger]);
 
   const fetchData = async () => {
     try {
