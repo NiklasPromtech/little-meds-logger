@@ -3,9 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Pill, Plus } from "lucide-react";
+import { Pill, Pencil, Trash2 } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
+import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
+import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
 interface Medication {
@@ -27,7 +39,9 @@ interface ActivityItem {
   timestamp: string;
   value?: string;
   quantity?: string;
-  givenBy?: string;
+  notes?: string;
+  medication_id?: string;
+  measurement_id?: string;
 }
 
 interface ChildData {
@@ -48,6 +62,8 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
   const [loading, setLoading] = useState(true);
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
+  const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
+  const [deleteLog, setDeleteLog] = useState<{ id: string; type: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -56,13 +72,11 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
 
   const fetchData = async () => {
     try {
-      // Fetch medications
       const { data: medsData } = await supabase
         .from("medications")
         .select("*")
         .eq("child_id", childId);
 
-      // Fetch measurements
       const { data: measData } = await supabase
         .from("measurements")
         .select("*")
@@ -71,7 +85,6 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
       setMedications(medsData || []);
       setMeasurements(measData || []);
 
-      // Fetch recent activity
       await fetchActivity();
     } catch (error: any) {
       console.error("Error:", error);
@@ -84,23 +97,17 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
     try {
       const { data: medLogs } = await supabase
         .from("medication_logs")
-        .select("id, given_at, quantity, medication_id, medications(name)")
-        .in(
-          "medication_id",
-          medications.map((m) => m.id)
-        )
+        .select("id, given_at, quantity, notes, medication_id, medications(name, dosage)")
+        .eq("medications.child_id", childId)
         .order("given_at", { ascending: false })
-        .limit(20);
+        .limit(50);
 
       const { data: measLogs } = await supabase
         .from("measurement_logs")
-        .select("id, recorded_at, value, measurement_id, measurements(name, unit)")
-        .in(
-          "measurement_id",
-          measurements.map((m) => m.id)
-        )
+        .select("id, recorded_at, value, notes, measurement_id, measurements(name, unit)")
+        .eq("measurements.child_id", childId)
         .order("recorded_at", { ascending: false })
-        .limit(20);
+        .limit(50);
 
       const combined: ActivityItem[] = [
         ...(medLogs || []).map((log: any) => ({
@@ -109,6 +116,8 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           name: log.medications?.name || "Unknown",
           timestamp: log.given_at,
           quantity: log.quantity,
+          notes: log.notes,
+          medication_id: log.medication_id,
         })),
         ...(measLogs || []).map((log: any) => ({
           id: log.id,
@@ -116,12 +125,36 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           name: log.measurements?.name || "Unknown",
           timestamp: log.recorded_at,
           value: `${log.value}${log.measurements?.unit ? " " + log.measurements.unit : ""}`,
+          notes: log.notes,
+          measurement_id: log.measurement_id,
         })),
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-      setActivity(combined.slice(0, 20));
+      setActivity(combined.slice(0, 50));
     } catch (error) {
       console.error("Error fetching activity:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteLog) return;
+
+    try {
+      const table = deleteLog.type === "medication" ? "medication_logs" : "measurement_logs";
+      const { error } = await supabase.from(table).delete().eq("id", deleteLog.id);
+
+      if (error) throw error;
+
+      toast({ title: "Log deleted" });
+      fetchActivity();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteLog(null);
     }
   };
 
@@ -191,7 +224,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                 {activity.map((item) => (
                   <Card key={item.id} className="p-4">
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-semibold">{item.name}</p>
                         {item.quantity && (
                           <p className="text-sm text-muted-foreground">
@@ -203,14 +236,35 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                             Value: {item.value}
                           </p>
                         )}
+                        {item.notes && (
+                          <p className="text-sm text-muted-foreground italic mt-1">
+                            {item.notes}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(item.timestamp), "MMM d")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(item.timestamp), "h:mm a")}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right mr-2">
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(item.timestamp), "MMM d")}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(item.timestamp), "h:mm a")}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingLog(item)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteLog({ id: item.id, type: item.type })}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -246,6 +300,52 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           }}
         />
       )}
+
+      {editingLog && editingLog.type === "medication" && (
+        <EditMedicationLogDialog
+          open={!!editingLog}
+          onOpenChange={(open) => !open && setEditingLog(null)}
+          log={editingLog}
+          onLogUpdated={() => {
+            fetchActivity();
+            setEditingLog(null);
+            toast({ title: "Log updated!" });
+          }}
+        />
+      )}
+
+      {editingLog && editingLog.type === "measurement" && (
+        <EditMeasurementLogDialog
+          open={!!editingLog}
+          onOpenChange={(open) => !open && setEditingLog(null)}
+          log={editingLog}
+          onLogUpdated={() => {
+            fetchActivity();
+            setEditingLog(null);
+            toast({ title: "Log updated!" });
+          }}
+        />
+      )}
+
+      <AlertDialog open={!!deleteLog} onOpenChange={() => setDeleteLog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this log?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this entry from the history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
