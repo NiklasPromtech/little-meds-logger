@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Pill, Pencil, Trash2 } from "lucide-react";
+import { Pill, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { LogMedicationDialog } from "./LogMedicationDialog";
+import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
 import {
@@ -54,15 +56,17 @@ interface ChildData {
 interface ActivityLogProps {
   childId: string;
   child: ChildData;
+  onActivityUpdate?: () => void;
 }
 
-export function ActivityLog({ childId, child }: ActivityLogProps) {
+export function ActivityLog({ childId, child, onActivityUpdate }: ActivityLogProps) {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [deleteLog, setDeleteLog] = useState<{ id: string; type: string } | null>(null);
+  const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -281,7 +285,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                       </div>
                       
                       {waitProgress && (
-            <div className="space-y-2">
+                        <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
                             <span className={waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"}>
                               {waitProgress.isReady ? "Can take next dose" : timeUntil}
@@ -304,6 +308,16 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
                             <span>Just took</span>
                             <span>Ready</span>
                           </div>
+                          {waitProgress.isReady && item.type === "medication" && (
+                            <Button
+                              size="sm"
+                              className="w-full mt-2"
+                              onClick={() => setLogAgainItem(item)}
+                            >
+                              <RotateCcw className="h-3 w-3 mr-2" />
+                              Log Again
+                            </Button>
+                          )}
                         </div>
                       )}
                     </Card>
@@ -315,6 +329,34 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
         </>
       )}
 
+      {logAgainItem && logAgainItem.type === "medication" && (
+        <LogMedicationDialog
+          open={!!logAgainItem}
+          onOpenChange={(open) => !open && setLogAgainItem(null)}
+          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", dosage: null, wait_hours: null }}
+          onLogAdded={() => {
+            fetchActivity();
+            setLogAgainItem(null);
+            onActivityUpdate?.();
+            toast({ title: "Medication logged!" });
+          }}
+        />
+      )}
+
+      {logAgainItem && logAgainItem.type === "measurement" && (
+        <LogMeasurementDialog
+          open={!!logAgainItem}
+          onOpenChange={(open) => !open && setLogAgainItem(null)}
+          measurement={measurements.find(m => m.id === logAgainItem.measurement_id) || { id: "", name: "", unit: null }}
+          onLogAdded={() => {
+            fetchActivity();
+            setLogAgainItem(null);
+            onActivityUpdate?.();
+            toast({ title: "Measurement logged!" });
+          }}
+        />
+      )}
+
       {editingLog && editingLog.type === "medication" && (
         <EditMedicationLogDialog
           open={!!editingLog}
@@ -323,6 +365,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           onLogUpdated={() => {
             fetchActivity();
             setEditingLog(null);
+            onActivityUpdate?.();
             toast({ title: "Log updated!" });
           }}
         />
@@ -336,6 +379,7 @@ export function ActivityLog({ childId, child }: ActivityLogProps) {
           onLogUpdated={() => {
             fetchActivity();
             setEditingLog(null);
+            onActivityUpdate?.();
             toast({ title: "Log updated!" });
           }}
         />
