@@ -58,6 +58,7 @@ export function EditMeasurementLogDialog({
   const [recordedAt, setRecordedAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     // Format the timestamp for datetime-local input
@@ -89,8 +90,12 @@ export function EditMeasurementLogDialog({
 
       if (error) throw error;
 
-      onOpenChange(false);
-      onLogUpdated();
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onOpenChange(false);
+        onLogUpdated();
+      }, 600);
     } catch (error: any) {
       console.error("Error updating log:", error);
     } finally {
@@ -177,11 +182,16 @@ export function EditMeasurementLogDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={loading || success}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+            <Button 
+              type="submit" 
+              className={`transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
+              disabled={loading || success}
+            >
+              {success ? "✓ Saved!" : loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>
