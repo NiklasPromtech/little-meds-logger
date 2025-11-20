@@ -162,6 +162,21 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     return `Wait ${minutes}m`;
   };
 
+  const getTimeSince = (timestamp: string) => {
+    const now = new Date();
+    const past = new Date(timestamp);
+    const diff = now.getTime() - past.getTime();
+    
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return "Just now";
+  };
+
   const getWaitProgress = (timestamp: string, nextDoseTime: Date | null, waitHours: number | null) => {
     if (!nextDoseTime || !waitHours) return null;
     
@@ -242,6 +257,8 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   const waitProgress = item.wait_hours && item.next_dose_time
                     ? getWaitProgress(item.timestamp, item.next_dose_time, item.wait_hours)
                     : null;
+                  const timeSince = getTimeSince(item.timestamp);
+                  const logDate = new Date(item.timestamp).toLocaleDateString();
                   
                   return (
                     <Card 
@@ -249,75 +266,83 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                       className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setEditingLog(item)}
                     >
-                      <div className="flex items-center gap-3">
-                        {waitProgress && (
+                      <div className="flex items-start gap-3">
+                        {item.type === "medication" && waitProgress ? (
                           <div className="relative flex-shrink-0">
-                            <svg className="w-12 h-12 transform -rotate-90">
+                            <svg className="w-11 h-11 transform -rotate-90">
                               <circle
-                                cx="24"
-                                cy="24"
-                                r="20"
+                                cx="22"
+                                cy="22"
+                                r="18"
                                 stroke="currentColor"
-                                strokeWidth="3"
+                                strokeWidth="2.5"
                                 fill="none"
                                 className="text-muted"
                               />
                               <circle
-                                cx="24"
-                                cy="24"
-                                r="20"
+                                cx="22"
+                                cy="22"
+                                r="18"
                                 stroke="currentColor"
-                                strokeWidth="3"
+                                strokeWidth="2.5"
                                 fill="none"
-                                strokeDasharray={`${2 * Math.PI * 20}`}
-                                strokeDashoffset={`${2 * Math.PI * 20 * (1 - waitProgress.percentage / 100)}`}
+                                strokeDasharray={`${2 * Math.PI * 18}`}
+                                strokeDashoffset={`${2 * Math.PI * 18 * (1 - waitProgress.percentage / 100)}`}
                                 className={`transition-all duration-1000 ${
                                   waitProgress.isReady ? "text-primary" : "text-accent"
                                 }`}
                               />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-xs font-semibold">
+                              <span className="text-[10px] font-semibold">
                                 {Math.round(waitProgress.percentage)}%
                               </span>
                             </div>
                           </div>
+                        ) : (
+                          <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-semibold text-primary">
+                              {item.type === "medication" ? "Rx" : "H"}
+                            </span>
+                          </div>
                         )}
                         
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{item.name}</p>
-                          {item.type === "medication" && item.accurate_medical_name && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {item.accurate_medical_name}
-                            </p>
-                          )}
-                          {item.type === "medication" && item.dosage && (
-                            <p className="text-xs text-muted-foreground">
-                              Dosage: {item.dosage}
-                            </p>
-                          )}
-                          {item.quantity && (
-                            <p className="text-xs text-muted-foreground">
-                              Quantity: {item.quantity}
-                            </p>
-                          )}
-                          {item.value && (
-                            <p className="text-xs text-muted-foreground">
-                              {item.value}
-                            </p>
-                          )}
-                          {item.type === "measurement" && (
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(item.timestamp).toLocaleString()}
-                            </p>
-                          )}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm truncate">{item.name}</p>
+                              {item.type === "medication" && item.accurate_medical_name && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {item.accurate_medical_name}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-xs font-medium text-muted-foreground">{timeSince}</p>
+                              <p className="text-[10px] text-muted-foreground">{logDate}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                            {item.type === "medication" && item.dosage && (
+                              <span>{item.dosage}</span>
+                            )}
+                            {item.quantity && (
+                              <span>Qty: {item.quantity}</span>
+                            )}
+                            {item.value && (
+                              <span className="font-medium">{item.value}</span>
+                            )}
+                          </div>
+                          
                           {waitProgress && (
-                            <p className={`text-xs mt-1 ${
-                              waitProgress.isReady ? "text-primary font-semibold" : "text-muted-foreground"
+                            <p className={`text-xs mt-1 font-medium ${
+                              waitProgress.isReady ? "text-primary" : "text-muted-foreground"
                             }`}>
-                              {waitProgress.isReady ? "Ready now" : timeUntil}
+                              {waitProgress.isReady ? "✓ Ready now" : timeUntil}
                             </p>
                           )}
+                          
                           {item.notes && (
                             <p className="text-xs text-muted-foreground italic mt-1 truncate">
                               {item.notes}
@@ -329,13 +354,13 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                       {waitProgress?.isReady && item.type === "medication" && (
                         <Button
                           size="sm"
-                          className="w-full mt-2"
+                          className="w-full mt-2 h-8 text-xs"
                           onClick={(e) => {
                             e.stopPropagation();
                             setLogAgainItem(item);
                           }}
                         >
-                          <RotateCcw className="h-3 w-3 mr-2" />
+                          <RotateCcw className="h-3 w-3 mr-1.5" />
                           Log Again
                         </Button>
                       )}
