@@ -258,7 +258,9 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                     ? getWaitProgress(item.timestamp, item.next_dose_time, item.wait_hours)
                     : null;
                   const timeSince = getTimeSince(item.timestamp);
-                  const logDate = new Date(item.timestamp).toLocaleDateString();
+                  const logDateTime = new Date(item.timestamp);
+                  const shortDate = logDateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  const time = logDateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                   
                   return (
                     <Card 
@@ -308,31 +310,28 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                         )}
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm truncate">{item.name}</p>
-                              {item.type === "medication" && item.accurate_medical_name && (
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {item.accurate_medical_name}
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-xs font-medium text-muted-foreground">{timeSince}</p>
-                              <p className="text-[10px] text-muted-foreground">{logDate}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                          <div className="flex items-baseline gap-2 flex-wrap">
+                            <p className="font-bold text-sm">{item.name}</p>
+                            {item.type === "medication" && item.accurate_medical_name && (
+                              <span className="text-xs text-muted-foreground">
+                                {item.accurate_medical_name}
+                              </span>
+                            )}
                             {item.type === "medication" && item.dosage && (
-                              <span>{item.dosage}</span>
+                              <span className="text-xs text-muted-foreground">{item.dosage}</span>
                             )}
                             {item.quantity && (
-                              <span>Qty: {item.quantity}</span>
+                              <span className="text-xs text-muted-foreground">Qty: {item.quantity}</span>
                             )}
                             {item.value && (
-                              <span className="font-medium">{item.value}</span>
+                              <span className="text-xs font-medium text-muted-foreground">{item.value}</span>
                             )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                            <span className="font-medium">{timeSince}</span>
+                            <span>•</span>
+                            <span>{shortDate} {time}</span>
                           </div>
                           
                           {waitProgress && (
