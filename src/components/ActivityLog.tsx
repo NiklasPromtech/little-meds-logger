@@ -313,93 +313,102 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                       className="p-3 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
                       onClick={() => setEditingLog(item)}
                     >
-                      <div className="flex items-start gap-3">
-                        {item.type === "medication" && waitProgress ? (
-                          <div className="relative flex-shrink-0">
-                            <svg className="w-11 h-11 transform -rotate-90">
-                              <circle
-                                cx="22"
-                                cy="22"
-                                r="18"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                fill="none"
-                                className="text-muted"
-                              />
-                              <circle
-                                cx="22"
-                                cy="22"
-                                r="18"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                fill="none"
-                                strokeDasharray={`${2 * Math.PI * 18}`}
-                                strokeDashoffset={`${2 * Math.PI * 18 * (1 - waitProgress.percentage / 100)}`}
-                                className={`transition-all duration-1000 ${
-                                  waitProgress.isReady ? "text-primary" : "text-accent"
-                                }`}
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-[10px] font-semibold">
-                                {Math.round(waitProgress.percentage)}%
-                              </span>
+                      {item.type === "measurement" ? (
+                        // Compact health tracking card
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                              <span className="text-base font-semibold text-secondary">H</span>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-semibold text-primary">
-                              {item.type === "medication" ? "Rx" : "H"}
-                            </span>
-                          </div>
-                        )}
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline justify-between gap-2">
                             <p className="font-semibold text-sm truncate">{item.name}</p>
-                            {waitProgress && (
-                              <span className={`text-xs font-medium flex-shrink-0 ${
-                                waitProgress.isReady ? "text-primary" : "text-muted-foreground"
-                              }`}>
-                                {waitProgress.isReady ? "Ready" : timeUntil}
-                              </span>
-                            )}
                           </div>
-                          
-                          {item.type === "medication" && item.accurate_medical_name && (
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">
-                              {item.accurate_medical_name}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                            {item.type === "medication" && item.dosage && (
-                              <span>{item.dosage}</span>
-                            )}
-                            {item.quantity && (
-                              <>
-                                {item.dosage && <span>•</span>}
-                                <span>Qty: {item.quantity}</span>
-                              </>
-                            )}
-                            {item.value && (
-                              <span className="font-medium">{item.value}</span>
-                            )}
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-lg font-bold text-foreground">{item.value}</p>
                           </div>
-                          
-                          <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                            <span>{timeSince}</span>
-                            <span>•</span>
-                            <span>{shortDate} {time}</span>
-                          </div>
-                          
-                          {item.notes && (
-                            <p className="text-xs text-muted-foreground italic mt-1 truncate">
-                              {item.notes}
-                            </p>
-                          )}
                         </div>
-                      </div>
+                      ) : (
+                        // Medication card with progress
+                        <div className="flex items-start gap-3">
+                          {waitProgress ? (
+                            <div className="relative flex-shrink-0">
+                              <svg className="w-11 h-11 transform -rotate-90">
+                                <circle
+                                  cx="22"
+                                  cy="22"
+                                  r="18"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  fill="none"
+                                  className="text-muted"
+                                />
+                                <circle
+                                  cx="22"
+                                  cy="22"
+                                  r="18"
+                                  stroke="currentColor"
+                                  strokeWidth="2.5"
+                                  fill="none"
+                                  strokeDasharray={`${2 * Math.PI * 18}`}
+                                  strokeDashoffset={`${2 * Math.PI * 18 * (1 - waitProgress.percentage / 100)}`}
+                                  className={`transition-all duration-1000 ${
+                                    waitProgress.isReady ? "text-primary" : "text-accent"
+                                  }`}
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-[10px] font-semibold">
+                                  {Math.round(waitProgress.percentage)}%
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-semibold text-primary">Rx</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline justify-between gap-2">
+                              <p className="font-semibold text-sm truncate">{item.name}</p>
+                              {waitProgress && (
+                                <span className={`text-xs font-medium flex-shrink-0 ${
+                                  waitProgress.isReady ? "text-primary" : "text-muted-foreground"
+                                }`}>
+                                  {waitProgress.isReady ? "Ready" : timeUntil}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {item.accurate_medical_name && (
+                              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                                {item.accurate_medical_name}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                              {item.dosage && <span>{item.dosage}</span>}
+                              {item.quantity && (
+                                <>
+                                  {item.dosage && <span>•</span>}
+                                  <span>Qty: {item.quantity}</span>
+                                </>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                              <span>{timeSince}</span>
+                              <span>•</span>
+                              <span>{shortDate} {time}</span>
+                            </div>
+                            
+                            {item.notes && (
+                              <p className="text-xs text-muted-foreground italic mt-1 truncate">
+                                {item.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       
                       {waitProgress?.isReady && item.type === "medication" && (
                         <Button
