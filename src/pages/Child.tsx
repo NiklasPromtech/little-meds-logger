@@ -34,6 +34,8 @@ const Child = () => {
   useEffect(() => {
     if (!id) return;
 
+    console.log('[Realtime] Setting up medication logs channel for child:', id);
+
     const channel = supabase
       .channel('medication-logs')
       .on(
@@ -44,16 +46,24 @@ const Child = () => {
           table: 'medication_logs',
         },
         async (payload) => {
+          console.log('[Realtime] Received medication log event:', payload);
           const newLog = payload.new;
           
           const { data: { user } } = await supabase.auth.getUser();
-          if (!user || newLog.given_by === user.id) return;
+          console.log('[Realtime] Current user:', user?.id, 'Given by:', newLog.given_by);
+          
+          if (!user || newLog.given_by === user.id) {
+            console.log('[Realtime] Skipping notification - same user');
+            return;
+          }
 
           const { data: medication } = await supabase
             .from('medications')
             .select('name, child_id')
             .eq('id', newLog.medication_id)
             .single();
+
+          console.log('[Realtime] Medication data:', medication);
 
           if (medication?.child_id === id) {
             const { data: giver } = await supabase
@@ -62,18 +72,25 @@ const Child = () => {
               .eq('id', newLog.given_by)
               .single();
 
+            console.log('[Realtime] Showing toast for:', medication.name, 'by', giver?.full_name);
+
             toast({
               title: "Medication Logged",
               description: `${giver?.full_name || 'A caregiver'} gave ${medication.name}`,
             });
 
             setRefreshTrigger(prev => prev + 1);
+          } else {
+            console.log('[Realtime] Medication not for this child');
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime] Subscription status:', status);
+      });
 
     return () => {
+      console.log('[Realtime] Cleaning up channel');
       supabase.removeChannel(channel);
     };
   }, [id]);
