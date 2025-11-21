@@ -1,5 +1,5 @@
-import { buildPushHTTPRequest } from 'https://esm.sh/@pushforge/builder@1.0.0?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import * as jose from 'https://deno.land/x/jose@v5.9.6/index.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -166,9 +166,10 @@ Deno.serve(async (req) => {
       }
 
       const vapidSubject = Deno.env.get('VAPID_SUBJECT');
+      const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
       const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
 
-      if (!vapidSubject || !vapidPrivateKey) {
+      if (!vapidSubject || !vapidPublicKey || !vapidPrivateKey) {
         console.error('Missing VAPID configuration');
         return new Response(JSON.stringify({ error: 'Push not configured' }), {
           status: 500,
@@ -176,39 +177,75 @@ Deno.serve(async (req) => {
         });
       }
 
-      const notificationMessage = {
-        payload: {
-          title: `${child.name} - Medication Logged`,
-          body: `${medicationName} was given`,
-          icon: '/pwa-icon-192.png',
-          badge: '/pwa-icon-192.png',
-        },
-        options: {
-          ttl: 3600,
-          urgency: 'normal',
-        },
-        adminContact: vapidSubject,
-      } as const;
+      console.log('VAPID keys loaded, preparing notifications for', subscriptions.length, 'subscriptions');
 
       const sendResults = await Promise.allSettled(
         subscriptions.map(async ({ subscription }) => {
-          const { endpoint, headers, body } = await buildPushHTTPRequest({
-            privateJWK: vapidPrivateKey,
-            subscription,
-            message: notificationMessage,
-          });
+          try {
+            console.log('Processing subscription:', JSON.stringify(subscription));
+            
+            const endpoint = subscription.endpoint;
+            const p256dh = subscription.keys.p256dh;
+            const auth = subscription.keys.auth;
 
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers,
-            body,
-          });
+            // Extract audience from endpoint
+            const url = new URL(endpoint);
+            const audience = `${url.protocol}//${url.hostname}`;
 
-          if (!res.ok) {
-            throw new Error(`Push failed with status ${res.status}`);
+            console.log('Audience:', audience);
+
+            // Import the VAPID private key using jose
+            const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${vapidPrivateKey}\n-----END PRIVATE KEY-----`;
+            const importedPrivateKey = await jose.importPKCS8(privateKeyPem, 'ES256');
+
+            console.log('Private key imported');
+
+            // Create JWT for VAPID
+            const jwt = await new jose.SignJWT({})
+              .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
+              .setAudience(audience)
+              .setExpirationTime('12h')
+              .setSubject(vapidSubject)
+              .sign(importedPrivateKey);
+
+            console.log('JWT created');
+
+            // Prepare the notification payload
+            const notificationPayload = JSON.stringify({
+              title: `${child.name} - Medication Logged`,
+              body: `${medicationName} was given`,
+              icon: '/pwa-icon-192.png',
+              badge: '/pwa-icon-192.png',
+            });
+
+            console.log('Notification payload:', notificationPayload);
+
+            // Send the push notification
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'TTL': '3600',
+                'Content-Type': 'application/octet-stream',
+                'Authorization': `vapid t=${jwt}, k=${vapidPublicKey}`,
+                'Urgency': 'normal',
+              },
+              body: notificationPayload,
+            });
+
+            console.log('Push response status:', res.status, res.statusText);
+
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error('Push failed:', res.status, errorText);
+              throw new Error(`Push failed with status ${res.status}: ${errorText}`);
+            }
+
+            console.log('Push sent successfully');
+            return true;
+          } catch (error) {
+            console.error('Error in subscription push:', error);
+            throw error;
           }
-
-          return true;
         })
       );
 
