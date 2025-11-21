@@ -74,7 +74,7 @@ export function MeasurementDetail({
   return (
     <div className="min-h-[100dvh] bg-background pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b">
+      <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <div className="flex items-center gap-4 p-4">
           <Button
             variant="ghost"
@@ -184,7 +184,7 @@ export function MeasurementDetail({
       </div>
 
       {/* Floating Add Button */}
-      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
+      <div className="fixed left-1/2 -translate-x-1/2 z-50" style={{ bottom: 'calc(5rem + var(--safe-area-inset-bottom))' }}>
         <Button
           size="sm"
           className="h-10 px-5 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-xl text-xs font-medium"

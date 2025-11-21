@@ -89,7 +89,7 @@ const Child = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
-      <header className="border-b sticky top-0 backdrop-blur-xl bg-background/80 z-10">
+      <header className="border-b sticky top-0 backdrop-blur-xl bg-background/80 z-10" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="rounded-full">
