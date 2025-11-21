@@ -215,6 +215,14 @@ Deno.serve(async (req) => {
       const sentCount = sendResults.filter((r) => r.status === 'fulfilled').length;
       const failedCount = sendResults.length - sentCount;
 
+      console.log('Raw push sendResults:', JSON.stringify(sendResults, null, 2));
+
+      sendResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`Notification ${index} failed:`, result.reason);
+        }
+      });
+
       console.log(`Notifications sent: ${sentCount}, failed: ${failedCount}`);
 
       return new Response(JSON.stringify({ 
