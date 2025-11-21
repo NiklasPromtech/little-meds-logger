@@ -88,7 +88,7 @@ const Child = () => {
   if (!child) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-[100dvh] bg-background pb-24">
       <header className="border-b sticky top-0 backdrop-blur-xl bg-background/80 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
@@ -113,7 +113,7 @@ const Child = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 min-h-[calc(100dvh-4rem)]">
         <ActivityLog childId={id!} child={child} onActivityUpdate={fetchChild} refreshTrigger={refreshTrigger} />
       </main>
 
