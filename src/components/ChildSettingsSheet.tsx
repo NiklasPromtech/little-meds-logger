@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus } from "lucide-react";
+import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus, Bell } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
 import { EditMedicationDefinitionDialog } from "./EditMedicationDefinitionDialog";
@@ -28,6 +28,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import {
+  registerServiceWorker,
+  requestNotificationPermission,
+  subscribeToPushNotifications,
+} from "@/lib/pushNotifications";
 
 interface Medication {
   id: string;
@@ -95,6 +100,7 @@ export function ChildSettingsSheet({
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement | null>(null);
   const [deleteItem, setDeleteItem] = useState<{ id: string; type: string; name: string } | null>(null);
   const [showDeleteChild, setShowDeleteChild] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<string>("checking");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,8 +109,55 @@ export function ChildSettingsSheet({
       setChildName(child.name);
       setChildColor(child.color);
       fetchCurrentUser();
+      checkNotificationStatus();
     }
   }, [open, childId, child]);
+
+  const checkNotificationStatus = async () => {
+    if (!("Notification" in window)) {
+      setNotificationStatus("unsupported");
+      return;
+    }
+    
+    if (Notification.permission === "granted") {
+      // Check if we have a subscription saved
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("push_subscriptions")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        setNotificationStatus(data ? "enabled" : "not-registered");
+      }
+    } else if (Notification.permission === "denied") {
+      setNotificationStatus("denied");
+    } else {
+      setNotificationStatus("not-enabled");
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    setNotificationStatus("registering");
+    try {
+      await registerServiceWorker();
+      const hasPermission = await requestNotificationPermission();
+      if (hasPermission) {
+        const success = await subscribeToPushNotifications();
+        if (success) {
+          setNotificationStatus("enabled");
+        } else {
+          setNotificationStatus("error");
+        }
+      } else {
+        setNotificationStatus("denied");
+      }
+    } catch (error) {
+      console.error("Error enabling notifications:", error);
+      setNotificationStatus("error");
+    }
+  };
 
   const fetchCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -435,6 +488,47 @@ export function ChildSettingsSheet({
                   ))}
                 </div>
               )}
+            </div>
+
+            <Separator />
+
+            {/* Notifications Section */}
+            <div>
+              <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </h3>
+              <Card className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Push Notifications</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notificationStatus === "enabled" && "✓ Notifications are enabled"}
+                        {notificationStatus === "not-enabled" && "Not enabled yet"}
+                        {notificationStatus === "not-registered" && "Permission granted, but not registered"}
+                        {notificationStatus === "denied" && "Permission denied"}
+                        {notificationStatus === "unsupported" && "Not supported"}
+                        {notificationStatus === "registering" && "Registering..."}
+                        {notificationStatus === "checking" && "Checking..."}
+                        {notificationStatus === "error" && "Registration failed"}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={handleEnableNotifications}
+                      disabled={notificationStatus === "enabled" || notificationStatus === "registering" || notificationStatus === "unsupported" || notificationStatus === "denied"}
+                    >
+                      {notificationStatus === "enabled" ? "Enabled" : "Enable"}
+                    </Button>
+                  </div>
+                  {notificationStatus === "denied" && (
+                    <p className="text-xs text-destructive">
+                      Notifications are blocked. Please enable them in your browser settings.
+                    </p>
+                  )}
+                </div>
+              </Card>
             </div>
 
             <Separator />
