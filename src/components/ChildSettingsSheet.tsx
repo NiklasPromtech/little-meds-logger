@@ -299,6 +299,7 @@ export function ChildSettingsSheet({
                   onChange={(e) => setChildName(e.target.value)}
                   onBlur={handleUpdateChild}
                   autoFocus={false}
+                  onFocus={(e) => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
                 />
               </div>
               <div>
