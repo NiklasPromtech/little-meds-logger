@@ -14,6 +14,7 @@ interface Medication {
   accurate_medical_name: string | null;
   dosage: string | null;
   wait_hours: number | null;
+  child_id: string;
 }
 
 interface Measurement {
