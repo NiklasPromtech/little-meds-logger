@@ -33,14 +33,13 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    // Use anon key with the auth header to authenticate the user
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const token = authHeader.replace('Bearer ', '').trim();
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       console.error('Unauthorized user:', userError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
