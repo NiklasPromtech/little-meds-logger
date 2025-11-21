@@ -59,7 +59,9 @@ export function LogMedicationDialog({
       if (error) throw error;
 
       // Send notification to other caregivers
-      await sendMedicationNotification(medication.child_id, medication.name, user.id);
+      console.log("About to send medication notification", { childId: medication.child_id, medicationName: medication.name, givenBy: user.id });
+      const notificationSuccess = await sendMedicationNotification(medication.child_id, medication.name, user.id);
+      console.log("sendMedicationNotification result", notificationSuccess);
 
       setSuccess(true);
       setTimeout(() => {
