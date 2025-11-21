@@ -21,8 +21,11 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('Push notification request received:', req.method, req.url);
+    
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('No authorization header');
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -38,18 +41,22 @@ Deno.serve(async (req) => {
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      console.error('Unauthorized user:', userError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
+    console.log('User authenticated:', user.id);
+
+    const body = await req.json();
+    const action = body.action;
 
     // Subscribe to push notifications
     if (action === 'subscribe' && req.method === 'POST') {
-      const { subscription }: SubscriptionPayload = await req.json();
+      const { subscription } = body as SubscriptionPayload;
+      console.log('Subscribe request received for user:', user.id);
       
       const { error: insertError } = await supabase
         .from('push_subscriptions')
@@ -66,6 +73,7 @@ Deno.serve(async (req) => {
         });
       }
 
+      console.log('Subscription saved successfully');
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -73,7 +81,8 @@ Deno.serve(async (req) => {
 
     // Send notification to other caregivers
     if (action === 'notify' && req.method === 'POST') {
-      const { childId, medicationName, givenBy }: NotificationPayload = await req.json();
+      const { childId, medicationName, givenBy } = body as NotificationPayload;
+      console.log('Notification request:', { childId, medicationName, givenBy });
 
       // Get all users with access to this child (except the one who logged)
       const { data: shares, error: sharesError } = await supabase
@@ -90,6 +99,8 @@ Deno.serve(async (req) => {
         });
       }
 
+      console.log('Shares found:', shares);
+
       // Get child creator
       const { data: child, error: childError } = await supabase
         .from('children')
@@ -105,10 +116,21 @@ Deno.serve(async (req) => {
         });
       }
 
+      console.log('Child found:', child);
+
       // Collect all user IDs (shares + creator, excluding the one who logged)
       const userIds = [...(shares?.map(s => s.user_id) || [])];
       if (child.created_by !== givenBy) {
         userIds.push(child.created_by);
+      }
+
+      console.log('Target user IDs for notification:', userIds);
+
+      if (userIds.length === 0) {
+        console.log('No users to notify');
+        return new Response(JSON.stringify({ success: true, sent: 0, message: 'No users to notify' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       // Get subscriptions for all these users
@@ -116,6 +138,8 @@ Deno.serve(async (req) => {
         .from('push_subscriptions')
         .select('subscription')
         .in('user_id', userIds);
+
+      console.log('Subscriptions found:', subscriptions?.length || 0);
 
       if (subsError) {
         console.error('Error fetching subscriptions:', subsError);

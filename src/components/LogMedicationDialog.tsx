@@ -59,7 +59,7 @@ export function LogMedicationDialog({
       if (error) throw error;
 
       // Send notification to other caregivers
-      sendMedicationNotification(medication.child_id, medication.name, user.id);
+      await sendMedicationNotification(medication.child_id, medication.name, user.id);
 
       setSuccess(true);
       setTimeout(() => {
