@@ -55,7 +55,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <header className="border-b backdrop-blur-xl bg-background/80">
+      <header className="border-b backdrop-blur-xl bg-background/80" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="h-6 w-6 text-primary" />
@@ -118,7 +118,7 @@ const Dashboard = () => {
         )}
       </main>
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      <div className="fixed left-1/2 -translate-x-1/2 z-50" style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom))' }}>
         <Button
           size="sm"
           className="h-10 px-5 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-xl text-xs font-medium"

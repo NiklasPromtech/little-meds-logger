@@ -86,7 +86,7 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-50">
+      <div className="fixed left-1/2 -translate-x-1/2 flex gap-2 z-50" style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom))' }}>
         <Button
           size="sm"
           className="h-10 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 text-xs font-medium"
