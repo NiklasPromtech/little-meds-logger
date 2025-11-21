@@ -1,4 +1,4 @@
-import webpush from 'https://esm.sh/web-push@3.6.7?bundle';
+import { buildPushHTTPRequest } from 'https://esm.sh/@pushforge/builder@1.0.0?target=deno';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -166,10 +166,9 @@ Deno.serve(async (req) => {
       }
 
       const vapidSubject = Deno.env.get('VAPID_SUBJECT');
-      const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
       const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
 
-      if (!vapidSubject || !vapidPublicKey || !vapidPrivateKey) {
+      if (!vapidSubject || !vapidPrivateKey) {
         console.error('Missing VAPID configuration');
         return new Response(JSON.stringify({ error: 'Push not configured' }), {
           status: 500,
@@ -177,17 +176,40 @@ Deno.serve(async (req) => {
         });
       }
 
-      webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-
-      const notificationPayload = JSON.stringify({
-        title: `${child.name} - Medication Logged`,
-        body: `${medicationName} was given`,
-        icon: '/pwa-icon-192.png',
-        badge: '/pwa-icon-192.png',
-      });
+      const notificationMessage = {
+        payload: {
+          title: `${child.name} - Medication Logged`,
+          body: `${medicationName} was given`,
+          icon: '/pwa-icon-192.png',
+          badge: '/pwa-icon-192.png',
+        },
+        options: {
+          ttl: 3600,
+          urgency: 'normal',
+        },
+        adminContact: vapidSubject,
+      } as const;
 
       const sendResults = await Promise.allSettled(
-        subscriptions.map((sub) => webpush.sendNotification(sub.subscription as any, notificationPayload))
+        subscriptions.map(async ({ subscription }) => {
+          const { endpoint, headers, body } = await buildPushHTTPRequest({
+            privateJWK: vapidPrivateKey,
+            subscription,
+            message: notificationMessage,
+          });
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body,
+          });
+
+          if (!res.ok) {
+            throw new Error(`Push failed with status ${res.status}`);
+          }
+
+          return true;
+        })
       );
 
       const sentCount = sendResults.filter((r) => r.status === 'fulfilled').length;
