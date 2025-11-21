@@ -310,20 +310,20 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   return (
                     <Card 
                       key={item.id} 
-                      className="p-3 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+                      className={item.type === "measurement" ? "p-2 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]" : "p-3 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"}
                       onClick={() => setEditingLog(item)}
                     >
                       {item.type === "measurement" ? (
                         // Compact health tracking card
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="w-9 h-9 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                              <span className="text-base font-semibold text-secondary">H</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <div className="w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                              <span className="text-[10px] font-semibold text-secondary">H</span>
                             </div>
-                            <p className="font-semibold text-sm truncate">{item.name}</p>
+                            <p className="font-medium text-xs truncate">{item.name}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-lg font-bold text-foreground">{item.value}</p>
+                            <p className="text-sm font-semibold text-foreground">{item.value}</p>
                           </div>
                         </div>
                       ) : (
