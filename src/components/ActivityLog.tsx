@@ -228,6 +228,16 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     return item.type === filter;
   });
 
+  // Find the most recent entry for each medication
+  const mostRecentMedicationLogs = new Map<string, string>();
+  activity.forEach(item => {
+    if (item.type === "medication" && item.medication_id) {
+      if (!mostRecentMedicationLogs.has(item.medication_id)) {
+        mostRecentMedicationLogs.set(item.medication_id, item.id);
+      }
+    }
+  });
+
   // If viewing measurement detail, show that instead
   if (selectedMeasurement) {
     return (
@@ -410,7 +420,10 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                         </div>
                       )}
                       
-                      {waitProgress?.isReady && item.type === "medication" && (
+                      {waitProgress?.isReady && 
+                       item.type === "medication" && 
+                       item.medication_id &&
+                       mostRecentMedicationLogs.get(item.medication_id) === item.id && (
                         <Button
                           size="sm"
                           className="w-full mt-2 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
