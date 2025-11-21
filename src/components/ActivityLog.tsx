@@ -7,6 +7,8 @@ import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
+import { MeasurementList } from "./MeasurementList";
+import { MeasurementDetail } from "./MeasurementDetail";
 
 
 interface Medication {
@@ -60,6 +62,12 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
   const [filter, setFilter] = useState<"all" | "medication" | "health">("all");
+  const [selectedMeasurement, setSelectedMeasurement] = useState<{
+    id: string;
+    name: string;
+    unit: string | null;
+  } | null>(null);
+  const [showAddMeasurement, setShowAddMeasurement] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -220,6 +228,19 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     return item.type === filter;
   });
 
+  // If viewing measurement detail, show that instead
+  if (selectedMeasurement) {
+    return (
+      <MeasurementDetail
+        measurementId={selectedMeasurement.id}
+        measurementName={selectedMeasurement.name}
+        unit={selectedMeasurement.unit}
+        onBack={() => setSelectedMeasurement(null)}
+        onAddLog={() => setShowAddMeasurement(true)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {!hasItems ? (
@@ -263,7 +284,14 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
               </Button>
             </div>
           </div>
-          {filteredActivity.length === 0 ? (
+          
+          {filter === "health" ? (
+            <MeasurementList
+              childId={childId}
+              onMeasurementClick={(id, name, unit) => setSelectedMeasurement({ id, name, unit })}
+              onAddClick={() => setShowAddMeasurement(true)}
+            />
+          ) : filteredActivity.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No activity logged yet</p>
             </Card>
@@ -452,6 +480,19 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           onDelete={() => {
             fetchActivity();
             setEditingLog(null);
+            onActivityUpdate?.();
+          }}
+        />
+      )}
+
+      {showAddMeasurement && (
+        <LogMeasurementDialog
+          open={showAddMeasurement}
+          onOpenChange={setShowAddMeasurement}
+          measurement={selectedMeasurement ? measurements.find(m => m.id === selectedMeasurement.id) || { id: "", name: "", unit: null } : { id: "", name: "", unit: null }}
+          onLogAdded={() => {
+            fetchActivity();
+            setShowAddMeasurement(false);
             onActivityUpdate?.();
           }}
         />
