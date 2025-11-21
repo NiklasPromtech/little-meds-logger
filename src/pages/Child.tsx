@@ -89,16 +89,16 @@ const Child = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="border-b sticky top-0 bg-background z-10">
+      <header className="border-b sticky top-0 backdrop-blur-xl bg-background/80 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="rounded-full">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0"
+                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0 shadow-lg"
                 style={{ backgroundColor: child.color }}
               >
                 {child.initials}
@@ -106,7 +106,7 @@ const Child = () => {
               <h1 className="text-xl font-bold truncate">{child.name}</h1>
             </div>
 
-            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
+            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} className="rounded-full">
               <Settings2 className="h-5 w-5" />
             </Button>
           </div>
