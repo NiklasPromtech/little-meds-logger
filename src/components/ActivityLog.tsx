@@ -17,6 +17,7 @@ interface Medication {
   accurate_medical_name: string | null;
   dosage: string | null;
   wait_hours: number | null;
+  child_id: string;
 }
 
 interface Measurement {
@@ -449,7 +450,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         <LogMedicationDialog
           open={!!logAgainItem}
           onOpenChange={(open) => !open && setLogAgainItem(null)}
-          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", accurate_medical_name: null, dosage: null, wait_hours: null }}
+          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", accurate_medical_name: null, dosage: null, wait_hours: null, child_id: "" }}
           onLogAdded={() => {
             fetchActivity();
             setLogAgainItem(null);

@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heart, Plus, LogOut } from "lucide-react";
 import { CreateChildDialog } from "@/components/CreateChildDialog";
+import {
+  registerServiceWorker,
+  requestNotificationPermission,
+  subscribeToPushNotifications,
+} from "@/lib/pushNotifications";
 
 interface Child {
   id: string;
@@ -23,7 +28,16 @@ const Dashboard = () => {
   useEffect(() => {
     checkAuth();
     fetchChildren();
+    setupPushNotifications();
   }, []);
+
+  const setupPushNotifications = async () => {
+    await registerServiceWorker();
+    const hasPermission = await requestNotificationPermission();
+    if (hasPermission) {
+      await subscribeToPushNotifications();
+    }
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
