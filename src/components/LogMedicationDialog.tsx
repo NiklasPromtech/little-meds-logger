@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Minus, Plus } from "lucide-react";
-import { sendMedicationNotification } from "@/lib/pushNotifications";
 
 interface Medication {
   id: string;
@@ -57,11 +56,6 @@ export function LogMedicationDialog({
       });
 
       if (error) throw error;
-
-      // Send notification to other caregivers
-      console.log("About to send medication notification", { childId: medication.child_id, medicationName: medication.name, givenBy: user.id });
-      const notificationSuccess = await sendMedicationNotification(medication.child_id, medication.name, user.id);
-      console.log("sendMedicationNotification result", notificationSuccess);
 
       setSuccess(true);
       setTimeout(() => {
