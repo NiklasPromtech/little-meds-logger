@@ -6,6 +6,7 @@ import { ArrowLeft, Settings2 } from "lucide-react";
 import { ActivityLog } from "@/components/ActivityLog";
 import { ChildSettingsSheet } from "@/components/ChildSettingsSheet";
 import { QuickLogFAB } from "@/components/QuickLogFAB";
+import { toast } from "@/hooks/use-toast";
 
 interface ChildData {
   id: string;
@@ -28,6 +29,53 @@ const Child = () => {
       fetchChild();
       updateFavicon();
     }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel('medication-logs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'medication_logs',
+        },
+        async (payload) => {
+          const newLog = payload.new;
+          
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || newLog.given_by === user.id) return;
+
+          const { data: medication } = await supabase
+            .from('medications')
+            .select('name, child_id')
+            .eq('id', newLog.medication_id)
+            .single();
+
+          if (medication?.child_id === id) {
+            const { data: giver } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', newLog.given_by)
+              .single();
+
+            toast({
+              title: "Medication Logged",
+              description: `${giver?.full_name || 'A caregiver'} gave ${medication.name}`,
+            });
+
+            setRefreshTrigger(prev => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const fetchChild = async () => {
