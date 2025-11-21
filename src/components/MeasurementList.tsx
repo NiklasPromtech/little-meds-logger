@@ -102,7 +102,7 @@ export function MeasurementList({ childId, onMeasurementClick, onAddClick }: Mea
       {measurements.map((measurement) => (
         <Card
           key={measurement.id}
-          className="p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] border-2 hover:border-primary/50"
+          className="p-4 cursor-pointer backdrop-blur-xl bg-card/80 hover:bg-card hover:shadow-xl transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] border-border/50"
           onClick={() => onMeasurementClick(measurement.id, measurement.name, measurement.unit)}
         >
           <div className="flex items-center justify-between">

@@ -74,13 +74,13 @@ export function MeasurementDetail({
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b">
         <div className="flex items-center gap-4 p-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="shrink-0"
+            className="shrink-0 rounded-full"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -102,7 +102,7 @@ export function MeasurementDetail({
         ) : logs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4">No measurements logged yet</p>
-            <Button onClick={onAddLog}>
+            <Button onClick={onAddLog} className="rounded-full">
               <Plus className="h-4 w-4 mr-2" />
               Log First Measurement
             </Button>
@@ -110,7 +110,7 @@ export function MeasurementDetail({
         ) : (
           <>
             {/* Chart */}
-            <Card className="p-4">
+            <Card className="p-4 backdrop-blur-xl bg-card/80">
               <h2 className="font-semibold mb-4">History</h2>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
@@ -148,7 +148,7 @@ export function MeasurementDetail({
               <h2 className="font-semibold mb-3">All Measurements</h2>
               <div className="space-y-2">
                 {logs.map((log) => (
-                  <Card key={log.id} className="p-3">
+                  <Card key={log.id} className="p-3 backdrop-blur-xl bg-card/80 border-border/50">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-2xl font-bold text-primary">
@@ -187,7 +187,7 @@ export function MeasurementDetail({
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <Button
           size="lg"
-          className="h-14 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          className="h-14 px-8 rounded-full shadow-2xl shadow-primary/20 hover:shadow-3xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95"
           onClick={onAddLog}
         >
           <Plus className="h-5 w-5 mr-2" />

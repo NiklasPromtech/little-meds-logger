@@ -254,7 +254,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   return (
     <div className="space-y-6">
       {!hasItems ? (
-        <Card className="p-12 text-center">
+        <Card className="p-12 text-center backdrop-blur-xl bg-card/80">
           <Pill className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">Nothing to track yet</h3>
           <p className="text-muted-foreground mb-6">
@@ -302,7 +302,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
               onAddClick={() => setShowAddMeasurement(true)}
             />
           ) : filteredActivity.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="p-8 text-center backdrop-blur-xl bg-card/80">
               <p className="text-muted-foreground">No activity logged yet</p>
             </Card>
           ) : (
@@ -320,7 +320,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   return (
                     <Card 
                       key={item.id} 
-                      className={item.type === "measurement" ? "p-2 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]" : "p-3 cursor-pointer hover:bg-accent/50 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"}
+                      className={item.type === "measurement" ? "p-2 cursor-pointer backdrop-blur-xl bg-card/80 hover:bg-card transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] border-border/50" : "p-3 cursor-pointer backdrop-blur-xl bg-card/80 hover:bg-card transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] border-border/50"}
                       onClick={() => setEditingLog(item)}
                     >
                       {item.type === "measurement" ? (
