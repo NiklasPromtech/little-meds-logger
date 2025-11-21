@@ -95,22 +95,22 @@ const Dashboard = () => {
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-3">
             {children.map((child) => (
               <Card
                 key={child.id}
-                className="group relative p-8 cursor-pointer backdrop-blur-xl bg-card/80 border hover:border-primary/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 overflow-hidden"
+                className="group relative cursor-pointer backdrop-blur-xl bg-card/80 border hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/10 overflow-hidden"
                 onClick={() => navigate(`/child/${child.id}`)}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-secondary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10">
+                <div className="relative z-10 flex items-center gap-3 p-3">
                   <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold text-white mb-6 shadow-xl ring-2 ring-background/20 group-hover:scale-110 transition-transform duration-300"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg ring-1 ring-background/20 group-hover:scale-105 transition-transform duration-300"
                     style={{ backgroundColor: child.color }}
                   >
                     {child.initials}
                   </div>
-                  <h3 className="text-2xl font-bold">{child.name}</h3>
+                  <h3 className="text-lg font-semibold">{child.name}</h3>
                 </div>
               </Card>
             ))}
