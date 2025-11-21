@@ -72,7 +72,7 @@ export function MeasurementDetail({
     }));
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-24">
+    <div className="min-h-[100dvh] bg-background pb-32">
       {/* Header */}
       <div className="sticky top-0 z-10 backdrop-blur-xl bg-background/80 border-b">
         <div className="flex items-center gap-4 p-4">
@@ -184,13 +184,13 @@ export function MeasurementDetail({
       </div>
 
       {/* Floating Add Button */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50">
         <Button
-          size="lg"
-          className="h-14 px-8 rounded-full shadow-2xl shadow-primary/20 hover:shadow-3xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95"
+          size="sm"
+          className="h-10 px-5 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-xl text-xs font-medium"
           onClick={onAddLog}
         >
-          <Plus className="h-5 w-5 mr-2" />
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
           Log Measurement
         </Button>
       </div>
