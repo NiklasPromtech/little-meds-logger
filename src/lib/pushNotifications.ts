@@ -28,28 +28,40 @@ export const requestNotificationPermission = async () => {
 
 export const subscribeToPushNotifications = async () => {
   try {
+    console.log('Starting push notification subscription...');
     const registration = await navigator.serviceWorker.ready;
+    console.log('Service worker ready:', registration);
     
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
     });
+    
+    console.log('Push subscription created:', subscription);
 
     // Save subscription to backend
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
+      console.error('No active session for subscription');
       throw new Error('No active session');
     }
 
-    const response = await supabase.functions.invoke('push-notifications?action=subscribe', {
-      body: { subscription },
+    console.log('Saving subscription to backend...');
+    const response = await supabase.functions.invoke('push-notifications', {
+      body: { 
+        action: 'subscribe',
+        subscription 
+      },
     });
 
+    console.log('Subscription save response:', response);
+
     if (response.error) {
+      console.error('Error saving subscription:', response.error);
       throw response.error;
     }
 
-    console.log('Push subscription saved');
+    console.log('Push subscription saved successfully');
     return true;
   } catch (error) {
     console.error('Error subscribing to push notifications:', error);
@@ -63,24 +75,32 @@ export const sendMedicationNotification = async (
   givenBy: string
 ) => {
   try {
+    console.log('Sending notification for:', { childId, medicationName, givenBy });
+    
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
+      console.error('No active session for notification');
       throw new Error('No active session');
     }
 
-    const response = await supabase.functions.invoke('push-notifications?action=notify', {
+    console.log('Invoking push-notifications edge function...');
+    const response = await supabase.functions.invoke('push-notifications', {
       body: {
+        action: 'notify',
         childId,
         medicationName,
         givenBy,
       },
     });
 
+    console.log('Notification response:', response);
+
     if (response.error) {
+      console.error('Notification error:', response.error);
       throw response.error;
     }
 
-    console.log('Notification sent to caregivers');
+    console.log('Notification sent successfully:', response.data);
     return true;
   } catch (error) {
     console.error('Error sending notification:', error);
