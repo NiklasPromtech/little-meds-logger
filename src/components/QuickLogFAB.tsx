@@ -86,23 +86,23 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-50">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-50">
         <Button
-          size="lg"
-          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          size="sm"
+          className="h-10 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 text-xs font-medium"
           onClick={() => setShowMedicationSheet(true)}
         >
-          <Pill className="h-5 w-5 mr-2" />
+          <Pill className="h-3.5 w-3.5 mr-1.5" />
           Medication
         </Button>
         
         <Button
-          size="lg"
-          className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+          size="sm"
+          className="h-10 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 text-xs font-medium"
           variant="secondary"
           onClick={() => setShowMeasurementSheet(true)}
         >
-          <Activity className="h-5 w-5 mr-2" />
+          <Activity className="h-3.5 w-3.5 mr-1.5" />
           Health
         </Button>
       </div>
@@ -141,13 +141,13 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
             <Button
               variant="outline"
-              className="w-full h-12"
+              className="w-full h-10 text-xs"
               onClick={() => {
                 setShowMedicationSheet(false);
                 setShowAddMedication(true);
               }}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
               Add New Medication
             </Button>
           </div>
@@ -188,13 +188,13 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
             <Button
               variant="outline"
-              className="w-full h-12"
+              className="w-full h-10 text-xs"
               onClick={() => {
                 setShowMeasurementSheet(false);
                 setShowAddMeasurement(true);
               }}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
               Add New Health Measure
             </Button>
           </div>
