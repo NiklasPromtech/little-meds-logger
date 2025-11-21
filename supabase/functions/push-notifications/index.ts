@@ -1,3 +1,4 @@
+import webpush from 'https://esm.sh/web-push@3.6.7?bundle';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
@@ -164,18 +165,40 @@ Deno.serve(async (req) => {
         });
       }
 
-      // For now, just log that we would send notifications
-      // Real implementation would require proper VAPID signing which is complex in Deno
-      console.log('Would send notifications to:', subscriptions.length, 'users');
-      console.log('Notification payload:', {
+      const vapidSubject = Deno.env.get('VAPID_SUBJECT');
+      const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY');
+      const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
+
+      if (!vapidSubject || !vapidPublicKey || !vapidPrivateKey) {
+        console.error('Missing VAPID configuration');
+        return new Response(JSON.stringify({ error: 'Push not configured' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+
+      const notificationPayload = JSON.stringify({
         title: `${child.name} - Medication Logged`,
         body: `${medicationName} was given`,
+        icon: '/pwa-icon-192.png',
+        badge: '/pwa-icon-192.png',
       });
 
+      const sendResults = await Promise.allSettled(
+        subscriptions.map((sub) => webpush.sendNotification(sub.subscription as any, notificationPayload))
+      );
+
+      const sentCount = sendResults.filter((r) => r.status === 'fulfilled').length;
+      const failedCount = sendResults.length - sentCount;
+
+      console.log(`Notifications sent: ${sentCount}, failed: ${failedCount}`);
+
       return new Response(JSON.stringify({ 
-        success: true, 
-        sent: subscriptions.length,
-        message: 'Notification logging complete (actual push delivery requires VAPID implementation)'
+        success: true,
+        sent: sentCount,
+        failed: failedCount,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
