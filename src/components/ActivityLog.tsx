@@ -418,24 +418,23 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                               </p>
                             )}
                           </div>
+
+                          {waitProgress?.isReady && 
+                           item.type === "medication" && 
+                           item.medication_id &&
+                           mostRecentMedicationLogs.get(item.medication_id) === item.id && (
+                            <Button
+                              size="icon"
+                              className="h-9 w-9 rounded-full flex-shrink-0 transition-all duration-200 hover:scale-110 active:scale-95"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setLogAgainItem(item);
+                              }}
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
-                      )}
-                      
-                      {waitProgress?.isReady && 
-                       item.type === "medication" && 
-                       item.medication_id &&
-                       mostRecentMedicationLogs.get(item.medication_id) === item.id && (
-                        <Button
-                          size="sm"
-                          className="w-full mt-2 h-8 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setLogAgainItem(item);
-                          }}
-                        >
-                          <RotateCcw className="h-3 w-3 mr-1.5" />
-                          Log Again
-                        </Button>
                       )}
                     </Card>
                   );
