@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface LogNoteDialogProps {
   open: boolean;
@@ -26,6 +27,7 @@ export function LogNoteDialog({
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { sendNotification } = usePushNotifications();
 
   const handleSubmit = async () => {
     if (!content.trim()) {
@@ -45,6 +47,12 @@ export function LogNoteDialog({
       });
 
       if (error) throw error;
+
+      // Send push notification to other caregivers
+      sendNotification({
+        childId: childId,
+        type: "note",
+      });
 
       setSuccess(true);
       setTimeout(() => {

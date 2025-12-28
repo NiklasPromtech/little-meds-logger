@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { formatDistanceToNow } from "date-fns";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface Medication {
   id: string;
@@ -47,6 +48,7 @@ export function LogMedicationDialog({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [recentLogs, setRecentLogs] = useState<MedicationLog[]>([]);
+  const { sendNotification } = usePushNotifications();
 
   // Fetch recent logs when dialog opens
   useEffect(() => {
@@ -129,6 +131,13 @@ export function LogMedicationDialog({
       });
 
       if (error) throw error;
+
+      // Send push notification to other caregivers
+      sendNotification({
+        childId: medication.child_id,
+        type: "medication",
+        itemName: medication.name,
+      });
 
       setSuccess(true);
       setTimeout(() => {

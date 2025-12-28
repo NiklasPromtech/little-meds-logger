@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { AlertTriangle, CheckCircle, Info, Loader2, AlertCircle, XCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface ChildProfile {
   name: string;
@@ -55,6 +56,7 @@ export function AIHealthReviewDialog({
 }: AIHealthReviewDialogProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
+  const { sendNotification } = usePushNotifications();
 
   const getSeverityLabel = (severity: number) => {
     switch (severity) {
@@ -95,6 +97,13 @@ export function AIHealthReviewDialog({
           severity: data.severity,
           assessment: data.assessment,
           watch_for: data.watchFor,
+        });
+        
+        // Send push notification to other caregivers
+        sendNotification({
+          childId: childId,
+          type: "ai_review",
+          severity: data.severity,
         });
         
         onReviewLogged?.();
