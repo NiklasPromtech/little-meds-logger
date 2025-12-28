@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_reviews: {
+        Row: {
+          assessment: string
+          child_id: string
+          created_at: string
+          created_by: string
+          id: string
+          severity: number
+          watch_for: string
+        }
+        Insert: {
+          assessment: string
+          child_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          severity: number
+          watch_for: string
+        }
+        Update: {
+          assessment?: string
+          child_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          severity?: number
+          watch_for?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_reviews_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       child_shares: {
         Row: {
           child_id: string

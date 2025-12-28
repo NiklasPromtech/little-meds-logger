@@ -20,7 +20,7 @@ interface ChildProfile {
 }
 
 interface ActivityItem {
-  type: "medication" | "measurement" | "note";
+  type: "medication" | "measurement" | "note" | "ai_review";
   name: string;
   timestamp: string;
   value?: string;
@@ -86,16 +86,15 @@ export function AIHealthReviewDialog({
       
       setResult(data);
 
-      // Log the AI review to notes
+      // Log the AI review to ai_reviews table
       const { data: { user } } = await supabase.auth.getUser();
       if (user && data) {
-        const severityLabel = getSeverityLabel(data.severity);
-        const noteContent = `[AI REVIEW] Level ${data.severity}/5 - ${severityLabel}\n\nAssessment: ${data.assessment}\n\nWatch for: ${data.watchFor}`;
-        
-        await supabase.from("notes").insert({
+        await supabase.from("ai_reviews").insert({
           child_id: childId,
-          content: noteContent,
           created_by: user.id,
+          severity: data.severity,
+          assessment: data.assessment,
+          watch_for: data.watchFor,
         });
         
         onReviewLogged?.();
