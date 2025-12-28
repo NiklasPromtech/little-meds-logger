@@ -22,6 +22,7 @@ interface Measurement {
   id: string;
   name: string;
   unit: string | null;
+  child_id: string;
 }
 
 interface QuickLogFABProps {

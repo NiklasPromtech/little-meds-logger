@@ -34,6 +34,7 @@ interface Measurement {
   id: string;
   name: string;
   unit: string | null;
+  child_id: string;
 }
 
 interface NoteItem {
@@ -93,6 +94,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     id: string;
     name: string;
     unit: string | null;
+    child_id: string;
   } | null>(null);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [showAIReview, setShowAIReview] = useState(false);
@@ -401,7 +403,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           {filter === "health" ? (
             <MeasurementList
               childId={childId}
-              onMeasurementClick={(id, name, unit) => setSelectedMeasurement({ id, name, unit })}
+              onMeasurementClick={(id, name, unit) => setSelectedMeasurement({ id, name, unit, child_id: childId })}
               onAddClick={() => setShowAddMeasurement(true)}
             />
           ) : filteredActivity.length === 0 ? (

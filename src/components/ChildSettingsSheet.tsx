@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus, Calendar } from "lucide-react";
+import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus, Calendar, Bell } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
 import { EditMedicationDefinitionDialog } from "./EditMedicationDefinitionDialog";
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { NotificationSettings } from "./NotificationSettings";
 
 interface Medication {
   id: string;
@@ -526,6 +527,17 @@ export function ChildSettingsSheet({
                   ))}
                 </div>
               )}
+            </div>
+
+            <Separator />
+
+            {/* Notification Settings Section */}
+            <div>
+              <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </h3>
+              <NotificationSettings />
             </div>
 
             <Separator />

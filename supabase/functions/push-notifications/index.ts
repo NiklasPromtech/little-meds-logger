@@ -7,13 +7,53 @@ const corsHeaders = {
 };
 
 interface SubscriptionPayload {
-  subscription: any; // PushSubscription JSON
+  subscription: any;
 }
 
 interface NotificationPayload {
   childId: string;
-  medicationName: string;
-  givenBy: string;
+  type: 'medication' | 'measurement' | 'note' | 'ai_review';
+  itemName?: string;
+  value?: string | number;
+  severity?: number;
+  loggedBy: string;
+}
+
+function getNotificationContent(
+  type: string,
+  childName: string,
+  itemName?: string,
+  value?: string | number,
+  severity?: number
+): { title: string; body: string } {
+  switch (type) {
+    case 'medication':
+      return {
+        title: `💊 ${childName}`,
+        body: `${itemName || 'Medication'} was given`,
+      };
+    case 'measurement':
+      return {
+        title: `📏 ${childName}`,
+        body: value ? `${itemName}: ${value}` : `${itemName} recorded`,
+      };
+    case 'note':
+      return {
+        title: `📝 ${childName}`,
+        body: 'New note added',
+      };
+    case 'ai_review':
+      const severityText = severity ? ` (Level ${severity}/5)` : '';
+      return {
+        title: `🤖 ${childName}`,
+        body: `AI Health Review completed${severityText}`,
+      };
+    default:
+      return {
+        title: childName,
+        body: 'New activity logged',
+      };
+  }
 }
 
 Deno.serve(async (req) => {
@@ -90,15 +130,15 @@ Deno.serve(async (req) => {
 
     // Send notification to other caregivers
     if (action === 'notify' && req.method === 'POST') {
-      const { childId, medicationName, givenBy } = body as NotificationPayload;
-      console.log('Notification request:', { childId, medicationName, givenBy });
+      const { childId, type, itemName, value, severity, loggedBy } = body as NotificationPayload;
+      console.log('Notification request:', { childId, type, itemName, value, severity, loggedBy });
 
       // Get all users with access to this child (except the one who logged)
       const { data: shares, error: sharesError } = await supabase
         .from('child_shares')
         .select('user_id')
         .eq('child_id', childId)
-        .neq('user_id', givenBy);
+        .neq('user_id', loggedBy);
 
       if (sharesError) {
         console.error('Error fetching shares:', sharesError);
@@ -110,7 +150,7 @@ Deno.serve(async (req) => {
 
       console.log('Shares found:', shares);
 
-      // Get child creator
+      // Get child creator and name
       const { data: child, error: childError } = await supabase
         .from('children')
         .select('created_by, name')
@@ -129,7 +169,7 @@ Deno.serve(async (req) => {
 
       // Collect all user IDs (shares + creator, excluding the one who logged)
       const userIds = [...(shares?.map(s => s.user_id) || [])];
-      if (child.created_by !== givenBy) {
+      if (child.created_by !== loggedBy) {
         userIds.push(child.created_by);
       }
 
@@ -179,6 +219,15 @@ Deno.serve(async (req) => {
 
       console.log('VAPID keys loaded, preparing notifications for', subscriptions.length, 'subscriptions');
 
+      // Get notification content based on type
+      const { title, body: notifBody } = getNotificationContent(
+        type,
+        child.name,
+        itemName,
+        value,
+        severity
+      );
+
       const sendResults = await Promise.allSettled(
         subscriptions.map(async ({ subscription }) => {
           try {
@@ -212,10 +261,14 @@ Deno.serve(async (req) => {
 
             // Prepare the notification payload
             const notificationPayload = JSON.stringify({
-              title: `${child.name} - Medication Logged`,
-              body: `${medicationName} was given`,
+              title,
+              body: notifBody,
               icon: '/pwa-icon-192.png',
               badge: '/pwa-icon-192.png',
+              data: {
+                childId,
+                type,
+              },
             });
 
             console.log('Notification payload:', notificationPayload);

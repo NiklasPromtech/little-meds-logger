@@ -20,11 +20,13 @@ import {
   YAxis,
   ResponsiveContainer,
 } from "recharts";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface Measurement {
   id: string;
   name: string;
   unit: string | null;
+  child_id: string;
 }
 
 interface MeasurementLog {
@@ -51,6 +53,7 @@ export function LogMeasurementDialog({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [recentLogs, setRecentLogs] = useState<MeasurementLog[]>([]);
+  const { sendNotification } = usePushNotifications();
 
   // Fetch recent logs when dialog opens
   useEffect(() => {
@@ -106,6 +109,14 @@ export function LogMeasurementDialog({
       });
 
       if (error) throw error;
+
+      // Send push notification to other caregivers
+      sendNotification({
+        childId: measurement.child_id,
+        type: "measurement",
+        itemName: measurement.name,
+        value: `${numValue}${measurement.unit ? ` ${measurement.unit}` : ""}`,
+      });
 
       setSuccess(true);
       setTimeout(() => {
