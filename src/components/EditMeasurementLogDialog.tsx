@@ -30,6 +30,7 @@ interface ActivityItem {
   value?: string;
   notes?: string;
   timestamp: string;
+  unit?: string | null;
 }
 
 interface EditMeasurementLogDialogProps {
@@ -121,17 +122,19 @@ export function EditMeasurementLogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit: {log.name}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="border-terminal-cyan">
+        <DialogHeader className="px-2 border-b-terminal-cyan">
+          <DialogTitle className="text-center text-terminal-cyan">Edit: {log.name}</DialogTitle>
+          <DialogDescription className="text-center">
             Update this measurement log
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="value">Value</Label>
+        <form onSubmit={handleSubmit} className="space-y-4 px-4">
+          <div className="space-y-2">
+            <Label htmlFor="value" className="text-terminal-cyan">
+              Value {log.unit && `(${log.unit})`}
+            </Label>
             <Input
               id="value"
               type="number"
@@ -140,42 +143,46 @@ export function EditMeasurementLogDialog({
               onChange={(e) => setValue(e.target.value)}
               placeholder="Enter value"
               required
+              className="border-terminal-cyan/50 focus:border-terminal-cyan text-terminal-cyan"
             />
           </div>
 
-          <div>
-            <Label htmlFor="recordedAt">Time Recorded</Label>
+          <div className="space-y-2">
+            <Label htmlFor="recordedAt" className="text-xs text-terminal-cyan">Time Recorded</Label>
             <Input
               id="recordedAt"
               type="datetime-local"
               value={recordedAt}
               onChange={(e) => setRecordedAt(e.target.value)}
               required
+              className="border-terminal-cyan/50 focus:border-terminal-cyan text-terminal-cyan"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground">
               Adjust when the measurement was actually taken
             </p>
           </div>
 
-          <div>
-            <Label htmlFor="notes">Notes (optional)</Label>
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-xs text-terminal-cyan">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information..."
               rows={2}
+              className="border-terminal-cyan/50 focus:border-terminal-cyan"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button
               type="button"
-              variant="destructive"
+              variant="outline"
               onClick={() => setShowDeleteConfirm(true)}
+              className="font-mono border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              <Trash2 className="h-4 w-4 mr-1" />
+              DELETE
             </Button>
             <div className="flex-1" />
             <Button
@@ -183,35 +190,36 @@ export function EditMeasurementLogDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
+              className="font-mono border-terminal-cyan text-terminal-cyan hover:bg-terminal-cyan/10 hover:text-terminal-cyan active:text-terminal-cyan"
             >
-              Cancel
+              CANCEL
             </Button>
             <Button 
               type="submit" 
-              className={`transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
+              className={`font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-cyan text-black hover:bg-terminal-cyan/90 hover:text-black active:text-black'}`}
               disabled={loading || success}
             >
-              {success ? "✓ Saved!" : loading ? "Saving..." : "Save"}
+              {success ? "SAVED" : loading ? "..." : "SAVE"}
             </Button>
           </div>
         </form>
       </DialogContent>
 
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-destructive">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this log?</AlertDialogTitle>
+            <AlertDialogTitle className="text-destructive">Delete this log?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently remove this entry from the history. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="font-mono">CANCEL</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-mono"
             >
-              Delete
+              DELETE
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
