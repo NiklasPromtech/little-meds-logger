@@ -1,1 +1,7 @@
 project_id = "vcmcfszjcchyvhndgopr"
+
+[functions.push-notifications]
+verify_jwt = true
+
+[functions.ai-health-review]
+verify_jwt = true
