@@ -138,7 +138,7 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <SheetHeader>
             <SheetTitle className="uppercase tracking-wider">&gt; LOG MEDICATION_</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 space-y-2 pb-20">
+          <div className="mt-6 space-y-2 overflow-y-auto max-h-[calc(80vh-180px)] pb-4">
             {medications.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8 uppercase">
                 NO MEDICATIONS CONFIGURED. ADD ONE BELOW.
@@ -185,7 +185,7 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
           <SheetHeader>
             <SheetTitle className="uppercase tracking-wider">&gt; LOG HEALTH TRACKING_</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 space-y-2 pb-20">
+          <div className="mt-6 space-y-2 overflow-y-auto max-h-[calc(80vh-180px)] pb-4">
             {measurements.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8 uppercase">
                 NO HEALTH ITEMS CONFIGURED. ADD ONE BELOW.
