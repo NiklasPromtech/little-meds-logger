@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle, Info, Loader2, AlertCircle, XCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
@@ -75,6 +75,41 @@ export function AIHealthReviewDialog({
     }
   };
 
+  const getBarColor = (barIndex: number, severity: number) => {
+    if (barIndex > severity) return "bg-muted";
+    switch (severity) {
+      case 1:
+        return "bg-green-500";
+      case 2:
+        return "bg-blue-500";
+      case 3:
+        return "bg-yellow-500";
+      case 4:
+        return "bg-orange-500";
+      case 5:
+        return "bg-red-500";
+      default:
+        return "bg-muted";
+    }
+  };
+
+  const getSeverityTextColor = (severity: number) => {
+    switch (severity) {
+      case 1:
+        return "text-green-600 dark:text-green-400";
+      case 2:
+        return "text-blue-600 dark:text-blue-400";
+      case 3:
+        return "text-yellow-600 dark:text-yellow-400";
+      case 4:
+        return "text-orange-600 dark:text-orange-400";
+      case 5:
+        return "text-red-600 dark:text-red-400";
+      default:
+        return "text-muted-foreground";
+    }
+  };
+
   const handleReview = async () => {
     setLoading(true);
     setResult(null);
@@ -120,40 +155,6 @@ export function AIHealthReviewDialog({
     }
   };
 
-  const getSeverityIcon = (severity: number) => {
-    switch (severity) {
-      case 1:
-        return <CheckCircle className="h-8 w-8 text-green-500" />;
-      case 2:
-        return <Info className="h-8 w-8 text-blue-500" />;
-      case 3:
-        return <AlertCircle className="h-8 w-8 text-yellow-500" />;
-      case 4:
-        return <AlertTriangle className="h-8 w-8 text-orange-500" />;
-      case 5:
-        return <XCircle className="h-8 w-8 text-red-500" />;
-      default:
-        return <Info className="h-8 w-8 text-muted-foreground" />;
-    }
-  };
-
-  const getSeverityColor = (severity: number) => {
-    switch (severity) {
-      case 1:
-        return "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400";
-      case 2:
-        return "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-400";
-      case 3:
-        return "bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-400";
-      case 4:
-        return "bg-orange-500/10 border-orange-500/30 text-orange-700 dark:text-orange-400";
-      case 5:
-        return "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400";
-      default:
-        return "bg-muted border-border";
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col z-[100]">
@@ -184,31 +185,36 @@ export function AIHealthReviewDialog({
           )}
 
           {result && (
-            <div className="space-y-3 pr-1">
-              <div className={`p-3 rounded-lg border ${getSeverityColor(result.severity)}`}>
-                <div className="flex items-center gap-3">
-                  {getSeverityIcon(result.severity)}
-                  <div>
-                    <p className="font-semibold text-sm">Level {result.severity}/5</p>
-                    <p className="text-xs">{getSeverityLabel(result.severity)}</p>
-                  </div>
-                </div>
-              </div>
-
+            <div className="space-y-4 pr-1">
+              {/* Visual Severity Bars */}
               <div className="space-y-2">
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((bar) => (
+                    <div
+                      key={bar}
+                      className={`h-3 flex-1 rounded-sm transition-colors ${getBarColor(bar, result.severity)}`}
+                    />
+                  ))}
+                </div>
+                <p className={`text-base font-semibold ${getSeverityTextColor(result.severity)}`}>
+                  {getSeverityLabel(result.severity)}
+                </p>
+              </div>
+
+              <div className="space-y-4">
                 <div>
-                  <h4 className="font-medium text-xs mb-1 text-terminal-amber">Assessment</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{result.assessment}</p>
+                  <h4 className="font-semibold text-sm mb-2 text-terminal-amber">Assessment</h4>
+                  <p className="text-sm text-foreground leading-relaxed">{result.assessment}</p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-xs mb-1 text-terminal-amber">What to Watch For</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{result.watchFor}</p>
+                  <h4 className="font-semibold text-sm mb-2 text-terminal-amber">What to Watch For</h4>
+                  <p className="text-sm text-foreground leading-relaxed">{result.watchFor}</p>
                 </div>
               </div>
 
-              <div className="bg-muted/50 p-2 rounded-lg">
-                <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground text-center leading-relaxed">
                   ⚠️ <strong>Disclaimer:</strong> This is NOT medical advice. This assessment is for informational purposes only. Always consult a healthcare professional for medical decisions.
                 </p>
               </div>
