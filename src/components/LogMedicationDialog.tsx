@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Minus, Plus } from "lucide-react";
 
 interface Medication {
   id: string;
@@ -34,6 +33,7 @@ export function LogMedicationDialog({
   onLogAdded,
 }: LogMedicationDialogProps) {
   const [quantity, setQuantity] = useState(1);
+  const [useHalves, setUseHalves] = useState(false);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -65,6 +65,22 @@ export function LogMedicationDialog({
   };
 
   const dosageUnit = getDosageUnit(medication.dosage);
+  const step = useHalves ? 0.5 : 1;
+  const minValue = useHalves ? 0.5 : 1;
+
+  // Format quantity for display (remove trailing .0)
+  const formatQuantity = (q: number): string => {
+    return q % 1 === 0 ? q.toString() : q.toFixed(1);
+  };
+
+  // Get plural unit
+  const getDisplayUnit = (q: number): string => {
+    if (!dosageUnit) return "";
+    if (q === 1) return dosageUnit;
+    // Handle plural
+    if (dosageUnit.endsWith('s')) return dosageUnit;
+    return dosageUnit + 's';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +92,8 @@ export function LogMedicationDialog({
 
       // Use detected unit or "x" for fallback
       const quantityText = dosageUnit 
-        ? `${quantity} ${dosageUnit}${quantity > 1 && !dosageUnit.endsWith('s') ? 's' : ''}`
-        : `${quantity}x`;
+        ? `${formatQuantity(quantity)} ${getDisplayUnit(quantity)}`
+        : `${formatQuantity(quantity)}x`;
       
       const { error } = await supabase.from("medication_logs").insert({
         medication_id: medication.id,
@@ -91,6 +107,7 @@ export function LogMedicationDialog({
       setSuccess(true);
       setTimeout(() => {
         setQuantity(1);
+        setUseHalves(false);
         setNotes("");
         setSuccess(false);
         onOpenChange(false);
@@ -103,88 +120,115 @@ export function LogMedicationDialog({
     }
   };
 
-  const increment = () => setQuantity(q => Math.min(q + 1, 99));
-  const decrement = () => setQuantity(q => Math.max(q - 1, 1));
+  const increment = () => setQuantity(q => Math.min(q + step, 99));
+  const decrement = () => setQuantity(q => Math.max(q - step, minValue));
+
+  // When switching modes, adjust quantity if needed
+  const handleModeChange = (halves: boolean) => {
+    setUseHalves(halves);
+    if (!halves && quantity % 1 !== 0) {
+      // Switching to whole mode with a fractional value - round up
+      setQuantity(Math.ceil(quantity));
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>{medication.name}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-center">{medication.name}</DialogTitle>
+          <DialogDescription className="text-center">
             {medication.dosage || "Log medication"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <Label className="mb-3 block text-center">
-              How many{dosageUnit ? ` ${dosageUnit}s` : ''}?
-            </Label>
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={decrement}
-                disabled={quantity <= 1}
-                className="h-16 w-16 rounded-full"
-              >
-                <Minus className="h-6 w-6" />
-              </Button>
-              
-              <div className="text-center min-w-[120px]">
-                <div className="text-5xl font-bold text-primary">
-                  {quantity}{dosageUnit ? ` ${dosageUnit}${quantity > 1 && !dosageUnit.endsWith('s') ? 's' : ''}` : 'x'}
-                </div>
-                {medication.dosage && (
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {medication.dosage}
-                  </div>
-                )}
-              </div>
-              
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={increment}
-                disabled={quantity >= 99}
-                className="h-16 w-16 rounded-full"
-              >
-                <Plus className="h-6 w-6" />
-              </Button>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6 px-2">
+          {/* Mode Toggle */}
+          <div className="flex justify-center gap-2">
+            <Button
+              type="button"
+              variant={!useHalves ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleModeChange(false)}
+              className="font-mono text-xs"
+            >
+              [WHOLE]
+            </Button>
+            <Button
+              type="button"
+              variant={useHalves ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleModeChange(true)}
+              className="font-mono text-xs"
+            >
+              [HALVES]
+            </Button>
           </div>
 
+          {/* Quantity Selector */}
+          <div className="flex items-center justify-center gap-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={decrement}
+              disabled={quantity <= minValue}
+              className="h-12 w-12 text-xl font-mono"
+            >
+              [-]
+            </Button>
+            
+            <div className="text-center min-w-[80px]">
+              <div className="text-4xl font-bold text-primary font-mono">
+                {formatQuantity(quantity)}
+              </div>
+              {dosageUnit && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  {getDisplayUnit(quantity)}
+                </div>
+              )}
+            </div>
+            
+            <Button
+              type="button"
+              variant="outline"
+              onClick={increment}
+              disabled={quantity >= 99}
+              className="h-12 w-12 text-xl font-mono"
+            >
+              [+]
+            </Button>
+          </div>
+
+          {/* Notes */}
           <div>
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes" className="text-xs">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information..."
               rows={2}
+              className="mt-1"
             />
           </div>
 
+          {/* Actions */}
           <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 font-mono"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
             >
-              Cancel
+              [CANCEL]
             </Button>
             <Button 
               type="submit" 
-              className={`flex-1 transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
-              size="lg" 
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
               disabled={loading || success}
             >
-              {success ? "✓ Logged!" : loading ? "Logging..." : "Log"}
+              {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
             </Button>
           </div>
         </form>
