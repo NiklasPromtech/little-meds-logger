@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { formatDistanceToNow, format } from "date-fns";
 
 interface Medication {
   id: string;
@@ -17,6 +19,13 @@ interface Medication {
   accurate_medical_name: string | null;
   dosage: string | null;
   child_id: string;
+}
+
+interface MedicationLog {
+  id: string;
+  given_at: string;
+  quantity: string | null;
+  notes: string | null;
 }
 
 interface LogMedicationDialogProps {
@@ -37,6 +46,30 @@ export function LogMedicationDialog({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [recentLogs, setRecentLogs] = useState<MedicationLog[]>([]);
+
+  // Fetch recent logs when dialog opens
+  useEffect(() => {
+    if (open && medication.id) {
+      fetchRecentLogs();
+    }
+  }, [open, medication.id]);
+
+  const fetchRecentLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("medication_logs")
+        .select("id, given_at, quantity, notes")
+        .eq("medication_id", medication.id)
+        .order("given_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setRecentLogs(data || []);
+    } catch (error) {
+      console.error("Error fetching recent logs:", error);
+    }
+  };
 
   // Parse the dosage to extract unit (e.g., "5 ml" -> "ml", "1 puff" -> "puff")
   const getDosageUnit = (dosage: string | null): string | null => {
@@ -134,17 +167,17 @@ export function LogMedicationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
+      <DialogContent className="max-w-sm mx-4">
+        <DialogHeader className="px-2">
           <DialogTitle className="text-center">{medication.name}</DialogTitle>
           <DialogDescription className="text-center">
             {medication.dosage || "Log medication"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 px-2">
+        <form onSubmit={handleSubmit} className="space-y-5 px-4">
           {/* Mode Toggle */}
-          <div className="flex justify-center gap-2">
+          <div className="flex justify-center gap-3">
             <Button
               type="button"
               variant={!useHalves ? "default" : "outline"}
@@ -166,7 +199,7 @@ export function LogMedicationDialog({
           </div>
 
           {/* Quantity Selector */}
-          <div className="flex items-center justify-center gap-6">
+          <div className="flex items-center justify-center gap-8 py-2">
             <Button
               type="button"
               variant="outline"
@@ -200,7 +233,7 @@ export function LogMedicationDialog({
           </div>
 
           {/* Notes */}
-          <div>
+          <div className="space-y-2">
             <Label htmlFor="notes" className="text-xs">Notes (optional)</Label>
             <Textarea
               id="notes"
@@ -208,12 +241,11 @@ export function LogMedicationDialog({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information..."
               rows={2}
-              className="mt-1"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
@@ -231,6 +263,31 @@ export function LogMedicationDialog({
               {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
             </Button>
           </div>
+
+          {/* Recent History */}
+          {recentLogs.length > 0 && (
+            <>
+              <Separator className="my-4" />
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Recent History</Label>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {recentLogs.map((log) => (
+                    <div 
+                      key={log.id} 
+                      className="flex items-center justify-between text-xs border border-border/50 p-2"
+                    >
+                      <span className="text-primary font-mono">
+                        {log.quantity || "1x"}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {formatDistanceToNow(new Date(log.given_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </form>
       </DialogContent>
     </Dialog>
