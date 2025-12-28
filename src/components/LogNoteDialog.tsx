@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +25,7 @@ export function LogNoteDialog({
 }: LogNoteDialogProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async () => {
     if (!content.trim()) {
@@ -46,10 +46,13 @@ export function LogNoteDialog({
 
       if (error) throw error;
 
-      toast.success("Note logged");
-      setContent("");
-      onOpenChange(false);
-      onNoteAdded?.();
+      setSuccess(true);
+      setTimeout(() => {
+        setContent("");
+        setSuccess(false);
+        onOpenChange(false);
+        onNoteAdded?.();
+      }, 600);
     } catch (error: any) {
       console.error("Error logging note:", error);
       toast.error("Failed to log note");
@@ -60,44 +63,40 @@ export function LogNoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-2">
-        <DialogHeader>
-          <DialogTitle className="uppercase tracking-wider">
+      <DialogContent className="border-terminal-magenta">
+        <DialogHeader className="border-b-terminal-magenta">
+          <DialogTitle className="uppercase tracking-wider text-center text-terminal-magenta">
             &gt; LOG NOTE_
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <pre className="text-xs text-muted-foreground">
-{`╔════════════════════════════════════╗
-║  ENTER OBSERVATION OR NOTE BELOW   ║
-╚════════════════════════════════════╝`}
-          </pre>
-
+        <div className="space-y-4 px-4">
           <Textarea
             placeholder="E.g., Good spirits today, sleeping well, drinking lots of water..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] uppercase"
+            className="min-h-[120px] border-terminal-magenta/50 focus:border-terminal-magenta"
           />
-        </div>
 
-        <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            [ESC] CANCEL
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !content.trim()}
-            className="flex-1"
-          >
-            {loading ? "SAVING..." : "[ENTER] LOG"}
-          </Button>
-        </DialogFooter>
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="flex-1 font-mono border-terminal-magenta text-terminal-magenta hover:bg-terminal-magenta/10"
+              disabled={loading || success}
+            >
+              [CANCEL]
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || success || !content.trim()}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-magenta text-magenta-foreground hover:bg-terminal-magenta/90'}`}
+            >
+              {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

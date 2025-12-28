@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -11,11 +11,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+} from "recharts";
 
 interface Measurement {
   id: string;
   name: string;
   unit: string | null;
+}
+
+interface MeasurementLog {
+  id: string;
+  value: number;
+  recorded_at: string;
 }
 
 interface LogMeasurementDialogProps {
@@ -35,6 +50,38 @@ export function LogMeasurementDialog({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [recentLogs, setRecentLogs] = useState<MeasurementLog[]>([]);
+
+  // Fetch recent logs when dialog opens
+  useEffect(() => {
+    if (open && measurement.id) {
+      fetchRecentLogs();
+    }
+  }, [open, measurement.id]);
+
+  const fetchRecentLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("measurement_logs")
+        .select("id, value, recorded_at")
+        .eq("measurement_id", measurement.id)
+        .order("recorded_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setRecentLogs(data || []);
+    } catch (error) {
+      console.error("Error fetching recent logs:", error);
+    }
+  };
+
+  // Prepare chart data (reverse for chronological order)
+  const chartData = [...recentLogs]
+    .reverse()
+    .map((log) => ({
+      date: format(new Date(log.recorded_at), "MMM d"),
+      value: log.value,
+    }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,17 +124,41 @@ export function LogMeasurementDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Log {measurement.name}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="border-terminal-cyan">
+        <DialogHeader className="px-2 border-b-terminal-cyan">
+          <DialogTitle className="text-center text-terminal-cyan">Log {measurement.name}</DialogTitle>
+          <DialogDescription className="text-center">
             Record a new measurement
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="value">
+        <form onSubmit={handleSubmit} className="space-y-4 px-4">
+          {/* Mini Chart */}
+          {chartData.length > 1 && (
+            <div className="border border-terminal-cyan/30 p-3">
+              <ResponsiveContainer width="100%" height={80}>
+                <LineChart data={chartData}>
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    axisLine={{ stroke: "hsl(180 100% 50% / 0.3)" }}
+                    tickLine={false}
+                  />
+                  <YAxis hide domain={['auto', 'auto']} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="hsl(180 100% 50%)"
+                    strokeWidth={2}
+                    dot={{ fill: "hsl(180 100% 50%)", r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="value" className="text-terminal-cyan">
               Value {measurement.unit && `(${measurement.unit})`}
             </Label>
             <Input
@@ -98,36 +169,38 @@ export function LogMeasurementDialog({
               onChange={(e) => setValue(e.target.value)}
               placeholder="Enter value"
               required
+              className="border-terminal-cyan/50 focus:border-terminal-cyan text-terminal-cyan"
             />
           </div>
 
-          <div>
-            <Label htmlFor="notes">Notes (optional)</Label>
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-xs text-terminal-cyan">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information..."
               rows={2}
+              className="border-terminal-cyan/50 focus:border-terminal-cyan"
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 font-mono border-terminal-cyan text-terminal-cyan hover:bg-terminal-cyan/10"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
             >
-              Cancel
+              [CANCEL]
             </Button>
             <Button 
               type="submit" 
-              className={`flex-1 transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-cyan text-cyan-foreground hover:bg-terminal-cyan/90'}`}
               disabled={loading || success}
             >
-              {success ? "✓ Logged!" : loading ? "Logging..." : "Log"}
+              {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
             </Button>
           </div>
         </form>
