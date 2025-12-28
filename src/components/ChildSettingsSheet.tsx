@@ -282,7 +282,7 @@ export function ChildSettingsSheet({
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="dob" className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     Date of Birth
@@ -295,16 +295,22 @@ export function ChildSettingsSheet({
                     onBlur={handleUpdateChild}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select value={gender} onValueChange={(value) => {
-                    setGender(value);
-                    setTimeout(handleUpdateChild, 100);
-                  }}>
-                    <SelectTrigger>
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    Gender
+                  </Label>
+                  <Select 
+                    value={gender || undefined} 
+                    onValueChange={(value) => {
+                      setGender(value);
+                      setTimeout(handleUpdateChild, 100);
+                    }}
+                  >
+                    <SelectTrigger id="gender">
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background border-primary">
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
