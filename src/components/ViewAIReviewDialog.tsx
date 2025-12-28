@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertTriangle, CheckCircle, Info, AlertCircle, XCircle, Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface AIReviewItem {
@@ -50,37 +50,38 @@ export function ViewAIReviewDialog({
     }
   };
 
-  const getSeverityIcon = (severity: number) => {
+  const getBarColor = (barIndex: number, severity: number) => {
+    if (barIndex > severity) return "bg-muted";
     switch (severity) {
       case 1:
-        return <CheckCircle className="h-8 w-8 text-green-500" />;
+        return "bg-green-500";
       case 2:
-        return <Info className="h-8 w-8 text-blue-500" />;
+        return "bg-blue-500";
       case 3:
-        return <AlertCircle className="h-8 w-8 text-yellow-500" />;
+        return "bg-yellow-500";
       case 4:
-        return <AlertTriangle className="h-8 w-8 text-orange-500" />;
+        return "bg-orange-500";
       case 5:
-        return <XCircle className="h-8 w-8 text-red-500" />;
+        return "bg-red-500";
       default:
-        return <Info className="h-8 w-8 text-muted-foreground" />;
+        return "bg-muted";
     }
   };
 
-  const getSeverityColor = (severity: number) => {
+  const getSeverityTextColor = (severity: number) => {
     switch (severity) {
       case 1:
-        return "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400";
+        return "text-green-600 dark:text-green-400";
       case 2:
-        return "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-400";
+        return "text-blue-600 dark:text-blue-400";
       case 3:
-        return "bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-400";
+        return "text-yellow-600 dark:text-yellow-400";
       case 4:
-        return "bg-orange-500/10 border-orange-500/30 text-orange-700 dark:text-orange-400";
+        return "text-orange-600 dark:text-orange-400";
       case 5:
-        return "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400";
+        return "text-red-600 dark:text-red-400";
       default:
-        return "bg-muted border-border";
+        return "text-muted-foreground";
     }
   };
 
@@ -131,35 +132,40 @@ export function ViewAIReviewDialog({
           <DialogTitle>AI Health Review</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+          <p className="text-sm text-muted-foreground">
             Logged {formattedDate} at {formattedTime}
           </p>
 
-          <div className={`p-3 rounded-lg border ${getSeverityColor(review.severity)}`}>
-            <div className="flex items-center gap-3">
-              {getSeverityIcon(review.severity)}
-              <div>
-                <p className="font-semibold text-sm">Level {review.severity}/5</p>
-                <p className="text-xs">{getSeverityLabel(review.severity)}</p>
-              </div>
-            </div>
-          </div>
-
+          {/* Visual Severity Bars */}
           <div className="space-y-2">
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((bar) => (
+                <div
+                  key={bar}
+                  className={`h-3 flex-1 rounded-sm transition-colors ${getBarColor(bar, review.severity)}`}
+                />
+              ))}
+            </div>
+            <p className={`text-base font-semibold ${getSeverityTextColor(review.severity)}`}>
+              {getSeverityLabel(review.severity)}
+            </p>
+          </div>
+
+          <div className="space-y-4">
             <div>
-              <h4 className="font-medium text-xs mb-1 text-terminal-amber">Assessment</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">{review.assessment}</p>
+              <h4 className="font-semibold text-sm mb-2 text-terminal-amber">Assessment</h4>
+              <p className="text-sm text-foreground leading-relaxed">{review.assessment}</p>
             </div>
 
             <div>
-              <h4 className="font-medium text-xs mb-1 text-terminal-amber">What to Watch For</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">{review.watch_for}</p>
+              <h4 className="font-semibold text-sm mb-2 text-terminal-amber">What to Watch For</h4>
+              <p className="text-sm text-foreground leading-relaxed">{review.watch_for}</p>
             </div>
           </div>
 
-          <div className="bg-muted/50 p-2 rounded-lg">
-            <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+          <div className="bg-muted/50 p-3 rounded-lg">
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
               ⚠️ <strong>Disclaimer:</strong> This is NOT medical advice. This assessment is for informational purposes only. Always consult a healthcare professional for medical decisions.
             </p>
           </div>
