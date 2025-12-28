@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,14 +82,14 @@ export function EditNoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-2">
-        <DialogHeader>
-          <DialogTitle className="uppercase tracking-wider">
+      <DialogContent className="border-terminal-magenta">
+        <DialogHeader className="border-b-terminal-magenta">
+          <DialogTitle className="uppercase tracking-wider text-center text-terminal-magenta">
             &gt; EDIT NOTE_
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 px-4">
           <div className="text-xs text-muted-foreground">
             LOGGED: {new Date(note.recorded_at).toLocaleString().toUpperCase()}
           </div>
@@ -98,34 +97,34 @@ export function EditNoteDialog({
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] uppercase"
+            className="min-h-[120px] border-terminal-magenta/50 focus:border-terminal-magenta"
           />
-        </div>
 
-        <DialogFooter className="gap-2">
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={deleting || loading}
-            className="flex-1"
-          >
-            {deleting ? "DELETING..." : "[DEL]"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            [ESC]
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !content.trim()}
-            className="flex-1"
-          >
-            {loading ? "SAVING..." : "[SAVE]"}
-          </Button>
-        </DialogFooter>
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !content.trim()}
+              className={`w-full font-mono transition-all duration-300 bg-terminal-magenta text-white hover:bg-terminal-magenta/90 hover:text-white active:text-white`}
+            >
+              {loading ? "[...]" : "[SAVE]"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="w-full font-mono border-terminal-magenta text-terminal-magenta hover:bg-terminal-magenta/10 hover:text-terminal-magenta active:text-terminal-magenta"
+            >
+              [ESC]
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              disabled={deleting || loading}
+              className="w-full font-mono border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              {deleting ? "[...]" : "[DEL]"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
