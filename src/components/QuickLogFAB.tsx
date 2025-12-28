@@ -90,38 +90,43 @@ export const QuickLogFAB = ({ childId, onLogComplete }: QuickLogFABProps) => {
 
   return (
     <>
-      {/* Terminal-style bottom bar */}
+      {/* Terminal-style bottom bar with safe area background */}
       <div 
-        className="fixed left-0 right-0 z-50 border-t-2 border-border bg-background"
-        style={{ bottom: 'var(--safe-area-inset-bottom, 0px)' }}
+        className="fixed left-0 right-0 bottom-0 z-50 bg-background"
       >
-        <div className="flex justify-center gap-2 p-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 px-4 text-xs uppercase tracking-wider text-accent hover:text-accent hover:border-accent"
-            onClick={() => setShowMedicationSheet(true)}
+        {/* Main bar content */}
+        <div className="border-t-2 border-border">
+          <div 
+            className="flex justify-center gap-2 p-3"
+            style={{ paddingBottom: 'max(12px, calc(var(--safe-area-inset-bottom, 0px) + 12px))' }}
           >
-            [Rx] MED
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 px-4 text-xs uppercase tracking-wider text-cyan hover:text-cyan hover:border-cyan"
-            onClick={() => setShowMeasurementSheet(true)}
-          >
-            [H] HEALTH
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 px-4 text-xs uppercase tracking-wider text-accent hover:text-accent hover:border-accent"
+              onClick={() => setShowMedicationSheet(true)}
+            >
+              [Rx] MED
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 px-4 text-xs uppercase tracking-wider text-cyan hover:text-cyan hover:border-cyan"
+              onClick={() => setShowMeasurementSheet(true)}
+            >
+              [H] HEALTH
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10 px-4 text-xs uppercase tracking-wider text-magenta hover:text-magenta hover:border-magenta"
-            onClick={() => setShowNoteDialog(true)}
-          >
-            [N] NOTE
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 px-4 text-xs uppercase tracking-wider text-magenta hover:text-magenta hover:border-magenta"
+              onClick={() => setShowNoteDialog(true)}
+            >
+              [N] NOTE
+            </Button>
+          </div>
         </div>
       </div>
 

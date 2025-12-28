@@ -156,12 +156,12 @@ export function AIHealthReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md z-[100]">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col z-[100]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>AI Health Review</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto">
           {!result && !loading && (
             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-4">
@@ -184,31 +184,31 @@ export function AIHealthReviewDialog({
           )}
 
           {result && (
-            <div className="space-y-4">
-              <div className={`p-4 rounded-lg border ${getSeverityColor(result.severity)}`}>
-                <div className="flex items-center gap-3 mb-2">
+            <div className="space-y-3 pr-1">
+              <div className={`p-3 rounded-lg border ${getSeverityColor(result.severity)}`}>
+                <div className="flex items-center gap-3">
                   {getSeverityIcon(result.severity)}
                   <div>
-                    <p className="font-semibold">Level {result.severity}/5</p>
-                    <p className="text-sm">{getSeverityLabel(result.severity)}</p>
+                    <p className="font-semibold text-sm">Level {result.severity}/5</p>
+                    <p className="text-xs">{getSeverityLabel(result.severity)}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div>
-                  <h4 className="font-medium text-sm mb-1">Assessment</h4>
-                  <p className="text-sm text-muted-foreground">{result.assessment}</p>
+                  <h4 className="font-medium text-xs mb-1 text-terminal-amber">Assessment</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{result.assessment}</p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-sm mb-1">What to Watch For</h4>
-                  <p className="text-sm text-muted-foreground">{result.watchFor}</p>
+                  <h4 className="font-medium text-xs mb-1 text-terminal-amber">What to Watch For</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{result.watchFor}</p>
                 </div>
               </div>
 
-              <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground text-center">
+              <div className="bg-muted/50 p-2 rounded-lg">
+                <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
                   ⚠️ <strong>Disclaimer:</strong> This is NOT medical advice. This assessment is for informational purposes only. Always consult a healthcare professional for medical decisions.
                 </p>
               </div>
