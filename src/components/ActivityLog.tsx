@@ -607,7 +607,12 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         open={showAIReview}
         onOpenChange={setShowAIReview}
         child={child}
+        childId={childId}
         recentActivity={activityForAIReview}
+        onReviewLogged={() => {
+          fetchActivity();
+          onActivityUpdate?.();
+        }}
       />
     </div>
   );

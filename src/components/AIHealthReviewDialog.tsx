@@ -34,7 +34,9 @@ interface AIHealthReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   child: ChildProfile;
+  childId: string;
   recentActivity: ActivityItem[];
+  onReviewLogged?: () => void;
 }
 
 interface ReviewResult {
@@ -47,10 +49,29 @@ export function AIHealthReviewDialog({
   open,
   onOpenChange,
   child,
+  childId,
   recentActivity,
+  onReviewLogged,
 }: AIHealthReviewDialogProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
+
+  const getSeverityLabel = (severity: number) => {
+    switch (severity) {
+      case 1:
+        return "Normal - Continue Monitoring";
+      case 2:
+        return "Mild Concern - Watch for Changes";
+      case 3:
+        return "Moderate Concern - Consider Calling Doctor";
+      case 4:
+        return "High Concern - Contact Doctor Soon";
+      case 5:
+        return "Urgent - Seek Medical Attention";
+      default:
+        return "Unknown";
+    }
+  };
 
   const handleReview = async () => {
     setLoading(true);
@@ -64,6 +85,21 @@ export function AIHealthReviewDialog({
       if (error) throw error;
       
       setResult(data);
+
+      // Log the AI review to notes
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && data) {
+        const severityLabel = getSeverityLabel(data.severity);
+        const noteContent = `[AI REVIEW] Level ${data.severity}/5 - ${severityLabel}\n\nAssessment: ${data.assessment}\n\nWatch for: ${data.watchFor}`;
+        
+        await supabase.from("notes").insert({
+          child_id: childId,
+          content: noteContent,
+          created_by: user.id,
+        });
+        
+        onReviewLogged?.();
+      }
     } catch (error: any) {
       console.error('Error getting AI review:', error);
       toast({
@@ -90,23 +126,6 @@ export function AIHealthReviewDialog({
         return <XCircle className="h-8 w-8 text-red-500" />;
       default:
         return <Info className="h-8 w-8 text-muted-foreground" />;
-    }
-  };
-
-  const getSeverityLabel = (severity: number) => {
-    switch (severity) {
-      case 1:
-        return "Normal - Continue Monitoring";
-      case 2:
-        return "Mild Concern - Watch for Changes";
-      case 3:
-        return "Moderate Concern - Consider Calling Doctor";
-      case 4:
-        return "High Concern - Contact Doctor Soon";
-      case 5:
-        return "Urgent - Seek Medical Attention";
-      default:
-        return "Unknown";
     }
   };
 
