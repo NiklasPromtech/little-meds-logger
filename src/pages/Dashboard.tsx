@@ -57,16 +57,26 @@ const Dashboard = () => {
     <div className="min-h-[100dvh] bg-background">
       <header className="border-b border-border" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <div className="container mx-auto px-4 py-4">
-          <pre className="text-primary text-xs sm:text-sm leading-tight mb-2">
+          {/* Mobile header */}
+          <div className="sm:hidden">
+            <div className="border border-primary p-2 mb-2">
+              <p className="text-primary text-xs text-center">KIDCARE MEDICAL TERMINAL v1.0</p>
+              <p className="text-primary text-xs text-center">PATIENT MONITORING SYSTEM</p>
+            </div>
+          </div>
+          
+          {/* Desktop header */}
+          <pre className="hidden sm:block text-primary text-xs sm:text-sm leading-tight mb-2">
 {`╔════════════════════════════════════════════════╗
 ║  KIDCARE MEDICAL TERMINAL v1.0                 ║
 ║  PATIENT MONITORING SYSTEM                     ║
 ╚════════════════════════════════════════════════╝`}
           </pre>
+          
           <div className="flex items-center justify-between mt-2">
-            <span className="text-muted-foreground text-sm">SYSTEM READY</span>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
+            <span className="text-muted-foreground text-xs sm:text-sm">SYSTEM READY</span>
+            <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-xs px-2">
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               [LOGOUT]
             </Button>
           </div>
