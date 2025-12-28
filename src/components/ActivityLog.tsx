@@ -11,7 +11,15 @@ import { EditNoteDialog } from "./EditNoteDialog";
 import { MeasurementList } from "./MeasurementList";
 import { MeasurementDetail } from "./MeasurementDetail";
 import { AIHealthReviewDialog } from "./AIHealthReviewDialog";
+import { ViewAIReviewDialog } from "./ViewAIReviewDialog";
 
+interface AIReviewItem {
+  id: string;
+  severity: number;
+  assessment: string;
+  watch_for: string;
+  created_at: string;
+}
 
 interface Medication {
   id: string;
@@ -88,6 +96,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   } | null>(null);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [showAIReview, setShowAIReview] = useState(false);
+  const [viewingAIReview, setViewingAIReview] = useState<AIReviewItem | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -422,7 +431,15 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                               content: item.content || "",
                               recorded_at: item.timestamp,
                             });
-                          } else if (item.type !== "ai_review") {
+                          } else if (item.type === "ai_review") {
+                            setViewingAIReview({
+                              id: item.id,
+                              severity: item.severity!,
+                              assessment: item.assessment!,
+                              watch_for: item.watch_for!,
+                              created_at: item.timestamp,
+                            });
+                          } else {
                             setEditingLog(item);
                           }
                         }}
@@ -646,6 +663,20 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           onActivityUpdate?.();
         }}
       />
+
+      {/* View AI Review dialog */}
+      {viewingAIReview && (
+        <ViewAIReviewDialog
+          open={!!viewingAIReview}
+          onOpenChange={(open) => !open && setViewingAIReview(null)}
+          review={viewingAIReview}
+          onReviewDeleted={() => {
+            setViewingAIReview(null);
+            fetchActivity();
+            onActivityUpdate?.();
+          }}
+        />
+      )}
     </div>
   );
 }
