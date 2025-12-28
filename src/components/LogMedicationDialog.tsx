@@ -38,6 +38,34 @@ export function LogMedicationDialog({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Parse the dosage to extract unit (e.g., "5 ml" -> "ml", "1 puff" -> "puff")
+  const getDosageUnit = (dosage: string | null): string | null => {
+    if (!dosage) return null;
+    
+    const lowerDosage = dosage.toLowerCase();
+    
+    // Common medication units
+    const units = ['ml', 'mg', 'puff', 'puffs', 'drop', 'drops', 'tablet', 'tablets', 'capsule', 'capsules', 'teaspoon', 'tsp', 'tablespoon', 'tbsp', 'unit', 'units', 'spray', 'sprays', 'patch', 'patches'];
+    
+    for (const unit of units) {
+      if (lowerDosage.includes(unit)) {
+        // Normalize plural forms
+        if (unit === 'puffs') return 'puff';
+        if (unit === 'drops') return 'drop';
+        if (unit === 'tablets') return 'tablet';
+        if (unit === 'capsules') return 'capsule';
+        if (unit === 'sprays') return 'spray';
+        if (unit === 'patches') return 'patch';
+        if (unit === 'units') return 'unit';
+        return unit;
+      }
+    }
+    
+    return null;
+  };
+
+  const dosageUnit = getDosageUnit(medication.dosage);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -46,7 +74,10 @@ export function LogMedicationDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const quantityText = `${quantity}x`;
+      // Use detected unit or "x" for fallback
+      const quantityText = dosageUnit 
+        ? `${quantity} ${dosageUnit}${quantity > 1 && !dosageUnit.endsWith('s') ? 's' : ''}`
+        : `${quantity}x`;
       
       const { error } = await supabase.from("medication_logs").insert({
         medication_id: medication.id,
@@ -87,7 +118,9 @@ export function LogMedicationDialog({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label className="mb-3 block text-center">How many times?</Label>
+            <Label className="mb-3 block text-center">
+              How many{dosageUnit ? ` ${dosageUnit}s` : ''}?
+            </Label>
             <div className="flex items-center justify-center gap-4">
               <Button
                 type="button"
@@ -101,7 +134,9 @@ export function LogMedicationDialog({
               </Button>
               
               <div className="text-center min-w-[120px]">
-                <div className="text-5xl font-bold text-primary">{quantity}x</div>
+                <div className="text-5xl font-bold text-primary">
+                  {quantity}{dosageUnit ? ` ${dosageUnit}${quantity > 1 && !dosageUnit.endsWith('s') ? 's' : ''}` : 'x'}
+                </div>
                 {medication.dosage && (
                   <div className="text-sm text-muted-foreground mt-1">
                     {medication.dosage}

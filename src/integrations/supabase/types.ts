@@ -51,25 +51,37 @@ export type Database = {
       }
       children: {
         Row: {
+          allergies: string | null
           color: string
           created_at: string
           created_by: string
+          date_of_birth: string | null
+          diagnoses: string | null
+          gender: string | null
           id: string
           initials: string
           name: string
         }
         Insert: {
+          allergies?: string | null
           color?: string
           created_at?: string
           created_by: string
+          date_of_birth?: string | null
+          diagnoses?: string | null
+          gender?: string | null
           id?: string
           initials: string
           name: string
         }
         Update: {
+          allergies?: string | null
           color?: string
           created_at?: string
           created_by?: string
+          date_of_birth?: string | null
+          diagnoses?: string | null
+          gender?: string | null
           id?: string
           initials?: string
           name?: string

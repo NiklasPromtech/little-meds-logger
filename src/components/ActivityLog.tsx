@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pill, RotateCcw } from "lucide-react";
+import { Pill, RotateCcw, Bot } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
 import { MeasurementList } from "./MeasurementList";
 import { MeasurementDetail } from "./MeasurementDetail";
+import { AIHealthReviewDialog } from "./AIHealthReviewDialog";
 
 
 interface Medication {
@@ -46,6 +47,10 @@ interface ChildData {
   id: string;
   name: string;
   color: string;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  allergies?: string | null;
+  diagnoses?: string | null;
 }
 
 interface ActivityLogProps {
@@ -69,6 +74,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     unit: string | null;
   } | null>(null);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
+  const [showAIReview, setShowAIReview] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -268,31 +274,42 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Activity</h3>
-            <div className="flex gap-1 bg-muted rounded-lg p-1">
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant={filter === "all" ? "default" : "ghost"}
-                onClick={() => setFilter("all")}
-                className="text-xs h-7 px-3"
+                variant="outline"
+                onClick={() => setShowAIReview(true)}
+                className="text-xs h-7 px-2"
               >
-                All
+                <Bot className="h-3 w-3 mr-1" />
+                AI Review
               </Button>
-              <Button
-                size="sm"
-                variant={filter === "medication" ? "default" : "ghost"}
-                onClick={() => setFilter("medication")}
-                className="text-xs h-7 px-3"
-              >
-                Medication
-              </Button>
-              <Button
-                size="sm"
-                variant={filter === "health" ? "default" : "ghost"}
-                onClick={() => setFilter("health")}
-                className="text-xs h-7 px-3"
-              >
-                Health
-              </Button>
+              <div className="flex gap-1 bg-muted rounded-lg p-1">
+                <Button
+                  size="sm"
+                  variant={filter === "all" ? "default" : "ghost"}
+                  onClick={() => setFilter("all")}
+                  className="text-xs h-7 px-3"
+                >
+                  All
+                </Button>
+                <Button
+                  size="sm"
+                  variant={filter === "medication" ? "default" : "ghost"}
+                  onClick={() => setFilter("medication")}
+                  className="text-xs h-7 px-3"
+                >
+                  Medication
+                </Button>
+                <Button
+                  size="sm"
+                  variant={filter === "health" ? "default" : "ghost"}
+                  onClick={() => setFilter("health")}
+                  className="text-xs h-7 px-3"
+                >
+                  Health
+                </Button>
+              </div>
             </div>
           </div>
           
@@ -519,6 +536,35 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           }}
         />
       )}
+
+      <AIHealthReviewDialog
+        open={showAIReview}
+        onOpenChange={setShowAIReview}
+        child={{
+          name: child.name,
+          dateOfBirth: child.date_of_birth || undefined,
+          age: child.date_of_birth 
+            ? Math.floor((new Date().getTime() - new Date(child.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+            : undefined,
+          gender: child.gender || undefined,
+          allergies: child.allergies || undefined,
+          diagnoses: child.diagnoses || undefined,
+        }}
+        recentActivity={activity.filter(item => {
+          const itemTime = new Date(item.timestamp).getTime();
+          const now = new Date().getTime();
+          const hours48 = 48 * 60 * 60 * 1000;
+          return now - itemTime <= hours48;
+        }).map(item => ({
+          type: item.type,
+          name: item.name,
+          timestamp: new Date(item.timestamp).toLocaleString(),
+          value: item.value,
+          quantity: item.quantity,
+          notes: item.notes,
+          dosage: item.dosage,
+        }))}
+      />
     </div>
   );
 }

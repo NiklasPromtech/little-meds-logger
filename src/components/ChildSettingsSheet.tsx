@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Pill, TrendingUp, Trash2, Share2, Pencil, User, UserMinus, Calendar } from "lucide-react";
 import { AddMedicationDialog } from "./AddMedicationDialog";
 import { AddMeasurementDialog } from "./AddMeasurementDialog";
 import { EditMedicationDefinitionDialog } from "./EditMedicationDefinitionDialog";
@@ -26,6 +27,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 
@@ -50,6 +58,10 @@ interface ChildData {
   initials: string;
   color: string;
   created_by: string;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  allergies?: string | null;
+  diagnoses?: string | null;
 }
 
 interface SharedUser {
@@ -88,6 +100,10 @@ export function ChildSettingsSheet({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [childName, setChildName] = useState(child.name);
   const [childColor, setChildColor] = useState(child.color);
+  const [dateOfBirth, setDateOfBirth] = useState(child.date_of_birth || "");
+  const [gender, setGender] = useState(child.gender || "");
+  const [allergies, setAllergies] = useState(child.allergies || "");
+  const [diagnoses, setDiagnoses] = useState(child.diagnoses || "");
   const [showAddMedication, setShowAddMedication] = useState(false);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -102,6 +118,10 @@ export function ChildSettingsSheet({
       fetchData();
       setChildName(child.name);
       setChildColor(child.color);
+      setDateOfBirth(child.date_of_birth || "");
+      setGender(child.gender || "");
+      setAllergies(child.allergies || "");
+      setDiagnoses(child.diagnoses || "");
       fetchCurrentUser();
     }
   }, [open, childId, child]);
@@ -164,7 +184,11 @@ export function ChildSettingsSheet({
         .update({ 
           name: childName, 
           initials,
-          color: childColor 
+          color: childColor,
+          date_of_birth: dateOfBirth || null,
+          gender: gender || null,
+          allergies: allergies || null,
+          diagnoses: diagnoses || null,
         })
         .eq("id", childId);
 
@@ -247,6 +271,59 @@ export function ChildSettingsSheet({
                   onBlur={handleUpdateChild}
                   autoFocus={false}
                   onFocus={(e) => e.target.setSelectionRange(e.target.value.length, e.target.value.length)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="dob" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Date of Birth
+                  </Label>
+                  <Input
+                    id="dob"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    onBlur={handleUpdateChild}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select value={gender} onValueChange={(value) => {
+                    setGender(value);
+                    setTimeout(handleUpdateChild, 100);
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="allergies">Known Allergies</Label>
+                <Textarea
+                  id="allergies"
+                  value={allergies}
+                  onChange={(e) => setAllergies(e.target.value)}
+                  onBlur={handleUpdateChild}
+                  placeholder="e.g., Penicillin, Peanuts..."
+                  className="min-h-[60px]"
+                />
+              </div>
+              <div>
+                <Label htmlFor="diagnoses">Conditions / Diagnoses</Label>
+                <Textarea
+                  id="diagnoses"
+                  value={diagnoses}
+                  onChange={(e) => setDiagnoses(e.target.value)}
+                  onBlur={handleUpdateChild}
+                  placeholder="e.g., Asthma, ADHD..."
+                  className="min-h-[60px]"
                 />
               </div>
               <div>
