@@ -167,7 +167,7 @@ export function LogMedicationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm mx-4">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-sm">
         <DialogHeader className="px-2">
           <DialogTitle className="text-center">{medication.name}</DialogTitle>
           <DialogDescription className="text-center">
