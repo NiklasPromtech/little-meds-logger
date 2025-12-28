@@ -15,13 +15,14 @@ interface ChildProfile {
 }
 
 interface ActivityItem {
-  type: "medication" | "measurement";
+  type: "medication" | "measurement" | "note";
   name: string;
   timestamp: string;
   value?: string;
   quantity?: string;
   notes?: string;
   dosage?: string;
+  content?: string;
 }
 
 interface ReviewRequest {
@@ -48,10 +49,13 @@ serve(async (req) => {
     const activitySummary = recentActivity.map(item => {
       if (item.type === "medication") {
         return `- ${item.timestamp}: Given ${item.name}${item.dosage ? ` (${item.dosage})` : ''}${item.quantity ? `, quantity: ${item.quantity}` : ''}${item.notes ? `, notes: ${item.notes}` : ''}`;
-      } else {
+      } else if (item.type === "measurement") {
         return `- ${item.timestamp}: ${item.name}: ${item.value}${item.notes ? `, notes: ${item.notes}` : ''}`;
+      } else if (item.type === "note") {
+        return `- ${item.timestamp}: General observation: ${item.content}`;
       }
-    }).join('\n');
+      return '';
+    }).filter(Boolean).join('\n');
 
     const prompt = `You are a helpful medical information assistant. Based on the following child's health data, provide a brief assessment.
 

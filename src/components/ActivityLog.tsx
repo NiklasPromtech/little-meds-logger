@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Pill, RotateCcw, Bot } from "lucide-react";
+import { RotateCcw, Bot } from "lucide-react";
 import { LogMedicationDialog } from "./LogMedicationDialog";
 import { LogMeasurementDialog } from "./LogMeasurementDialog";
 import { EditMedicationLogDialog } from "./EditMedicationLogDialog";
 import { EditMeasurementLogDialog } from "./EditMeasurementLogDialog";
+import { EditNoteDialog } from "./EditNoteDialog";
 import { MeasurementList } from "./MeasurementList";
 import { MeasurementDetail } from "./MeasurementDetail";
 import { AIHealthReviewDialog } from "./AIHealthReviewDialog";
@@ -27,9 +28,15 @@ interface Measurement {
   unit: string | null;
 }
 
+interface NoteItem {
+  id: string;
+  content: string;
+  recorded_at: string;
+}
+
 interface ActivityItem {
   id: string;
-  type: "medication" | "measurement";
+  type: "medication" | "measurement" | "note";
   name: string;
   timestamp: string;
   value?: string;
@@ -41,6 +48,7 @@ interface ActivityItem {
   next_dose_time?: Date | null;
   accurate_medical_name?: string | null;
   dosage?: string | null;
+  content?: string;
 }
 
 interface ChildData {
@@ -66,8 +74,9 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingLog, setEditingLog] = useState<ActivityItem | null>(null);
+  const [editingNote, setEditingNote] = useState<NoteItem | null>(null);
   const [logAgainItem, setLogAgainItem] = useState<ActivityItem | null>(null);
-  const [filter, setFilter] = useState<"all" | "medication" | "health">("all");
+  const [filter, setFilter] = useState<"all" | "medication" | "health" | "notes">("all");
   const [selectedMeasurement, setSelectedMeasurement] = useState<{
     id: string;
     name: string;
@@ -136,6 +145,14 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         .order("recorded_at", { ascending: false })
         .limit(50) : { data: [] };
 
+      // Fetch notes
+      const { data: notesData } = await supabase
+        .from("notes")
+        .select("*")
+        .eq("child_id", childId)
+        .order("recorded_at", { ascending: false })
+        .limit(50);
+
       const combined: ActivityItem[] = [
         ...(medLogs || []).map((log: any) => {
           // Use log's custom wait_hours if set, otherwise use medication's default
@@ -166,6 +183,13 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           value: `${log.value}${log.measurements?.unit ? " " + log.measurements.unit : ""}`,
           notes: log.notes,
           measurement_id: log.measurement_id,
+        })),
+        ...(notesData || []).map((note: any) => ({
+          id: note.id,
+          type: "note" as const,
+          name: "Note",
+          timestamp: note.recorded_at,
+          content: note.content,
         })),
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -236,6 +260,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   const filteredActivity = activity.filter(item => {
     if (filter === "all") return true;
     if (filter === "health") return item.type === "measurement";
+    if (filter === "notes") return item.type === "note";
     return item.type === filter;
   });
 
@@ -262,8 +287,20 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
     );
   }
 
+  // Prepare data for AI review including notes
+  const activityForAIReview = activity.map(item => ({
+    type: item.type,
+    name: item.name,
+    timestamp: item.timestamp,
+    value: item.value,
+    quantity: item.quantity,
+    notes: item.notes,
+    dosage: item.dosage,
+    content: item.content,
+  }));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {!hasItems ? (
         <Card className="p-8 text-center">
           <pre className="text-muted-foreground text-sm mb-4">
@@ -281,45 +318,54 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         <>
 
         <div className="border border-border p-4">
-          <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+          {/* Header row - stacked layout */}
+          <div className="flex items-center justify-between mb-3 border-b border-border pb-3">
             <h3 className="text-lg uppercase tracking-wider">&gt; ACTIVITY LOG</h3>
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowAIReview(true)}
-                className="text-sm h-8 px-3"
-              >
-                <Bot className="h-3 w-3 mr-1" />
-                [AI]
-              </Button>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant={filter === "all" ? "default" : "outline"}
-                  onClick={() => setFilter("all")}
-                  className="text-sm h-8 px-3"
-                >
-                  [F1] ALL
-                </Button>
-                <Button
-                  size="sm"
-                  variant={filter === "medication" ? "default" : "outline"}
-                  onClick={() => setFilter("medication")}
-                  className="text-sm h-8 px-3"
-                >
-                  [F2] MEDS
-                </Button>
-                <Button
-                  size="sm"
-                  variant={filter === "health" ? "default" : "outline"}
-                  onClick={() => setFilter("health")}
-                  className="text-sm h-8 px-3"
-                >
-                  [F3] HEALTH
-                </Button>
-              </div>
-            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowAIReview(true)}
+              className="text-sm h-8 px-3"
+            >
+              <Bot className="h-3 w-3 mr-1" />
+              [AI REVIEW]
+            </Button>
+          </div>
+          
+          {/* Filter buttons row - wrapping */}
+          <div className="flex flex-wrap gap-1 mb-4">
+            <Button
+              size="sm"
+              variant={filter === "all" ? "default" : "outline"}
+              onClick={() => setFilter("all")}
+              className="text-xs h-7 px-2"
+            >
+              [F1] ALL
+            </Button>
+            <Button
+              size="sm"
+              variant={filter === "medication" ? "default" : "outline"}
+              onClick={() => setFilter("medication")}
+              className={`text-xs h-7 px-2 ${filter === "medication" ? "" : "text-accent border-accent/50 hover:border-accent"}`}
+            >
+              [F2] MEDS
+            </Button>
+            <Button
+              size="sm"
+              variant={filter === "health" ? "default" : "outline"}
+              onClick={() => setFilter("health")}
+              className={`text-xs h-7 px-2 ${filter === "health" ? "" : "text-cyan border-cyan/50 hover:border-cyan"}`}
+            >
+              [F3] HEALTH
+            </Button>
+            <Button
+              size="sm"
+              variant={filter === "notes" ? "default" : "outline"}
+              onClick={() => setFilter("notes")}
+              className={`text-xs h-7 px-2 ${filter === "notes" ? "" : "text-magenta border-magenta/50 hover:border-magenta"}`}
+            >
+              [F4] NOTES
+            </Button>
           </div>
           
           {filter === "health" ? (
@@ -347,10 +393,31 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   return (
                     <Card 
                       key={item.id} 
-                      className={item.type === "measurement" ? "p-2 cursor-pointer hover:border-primary transition-all duration-200" : "p-3 cursor-pointer hover:border-primary transition-all duration-200"}
-                      onClick={() => setEditingLog(item)}
+                      className={item.type === "measurement" || item.type === "note" ? "p-2 cursor-pointer hover:border-primary transition-all duration-200" : "p-3 cursor-pointer hover:border-primary transition-all duration-200"}
+                      onClick={() => {
+                        if (item.type === "note") {
+                          setEditingNote({
+                            id: item.id,
+                            content: item.content || "",
+                            recorded_at: item.timestamp,
+                          });
+                        } else {
+                          setEditingLog(item);
+                        }
+                      }}
                     >
-                      {item.type === "measurement" ? (
+                      {item.type === "note" ? (
+                        // Note card - MAGENTA color
+                        <div className="flex items-start gap-2">
+                          <span className="text-magenta flex-shrink-0">[N]</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm uppercase text-magenta">{item.content}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {timeSince.toUpperCase()} | {shortDate.toUpperCase()} {time.toUpperCase()}
+                            </p>
+                          </div>
+                        </div>
+                      ) : item.type === "measurement" ? (
                         // Compact health tracking card - CYAN color
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -451,108 +518,96 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         </>
       )}
 
-      {logAgainItem && logAgainItem.type === "medication" && (
+      {/* Log again medication dialog */}
+      {logAgainItem && logAgainItem.medication_id && (
         <LogMedicationDialog
           open={!!logAgainItem}
           onOpenChange={(open) => !open && setLogAgainItem(null)}
-          medication={medications.find(m => m.id === logAgainItem.medication_id) || { id: "", name: "", accurate_medical_name: null, dosage: null, wait_hours: null, child_id: "" }}
+          medication={medications.find(m => m.id === logAgainItem.medication_id)!}
           onLogAdded={() => {
-            fetchActivity();
             setLogAgainItem(null);
+            fetchActivity();
             onActivityUpdate?.();
           }}
         />
       )}
 
-      {logAgainItem && logAgainItem.type === "measurement" && (
-        <LogMeasurementDialog
-          open={!!logAgainItem}
-          onOpenChange={(open) => !open && setLogAgainItem(null)}
-          measurement={measurements.find(m => m.id === logAgainItem.measurement_id) || { id: "", name: "", unit: null }}
-          onLogAdded={() => {
-            fetchActivity();
-            setLogAgainItem(null);
-            onActivityUpdate?.();
-          }}
-        />
-      )}
-
+      {/* Edit medication log dialog */}
       {editingLog && editingLog.type === "medication" && (
         <EditMedicationLogDialog
           open={!!editingLog}
           onOpenChange={(open) => !open && setEditingLog(null)}
-          log={editingLog}
-          onLogUpdated={() => {
-            fetchActivity();
-            setEditingLog(null);
-            onActivityUpdate?.();
+          log={{
+            id: editingLog.id,
+            name: editingLog.name,
+            quantity: editingLog.quantity,
+            notes: editingLog.notes,
+            timestamp: editingLog.timestamp,
+            wait_hours: editingLog.wait_hours,
+            medication_id: editingLog.medication_id,
           }}
-          onDelete={() => {
-            fetchActivity();
+          onLogUpdated={() => {
             setEditingLog(null);
+            fetchActivity();
             onActivityUpdate?.();
           }}
         />
       )}
 
+      {/* Edit measurement log dialog */}
       {editingLog && editingLog.type === "measurement" && (
         <EditMeasurementLogDialog
           open={!!editingLog}
           onOpenChange={(open) => !open && setEditingLog(null)}
-          log={editingLog}
-          onLogUpdated={() => {
-            fetchActivity();
-            setEditingLog(null);
-            onActivityUpdate?.();
+          log={{
+            id: editingLog.id,
+            name: editingLog.name,
+            value: editingLog.value,
+            notes: editingLog.notes,
+            timestamp: editingLog.timestamp,
           }}
-          onDelete={() => {
-            fetchActivity();
+          onLogUpdated={() => {
             setEditingLog(null);
+            fetchActivity();
             onActivityUpdate?.();
           }}
         />
       )}
 
-      {showAddMeasurement && (
+      {/* Edit note dialog */}
+      {editingNote && (
+        <EditNoteDialog
+          open={!!editingNote}
+          onOpenChange={(open) => !open && setEditingNote(null)}
+          note={editingNote}
+          onNoteUpdated={() => {
+            setEditingNote(null);
+            fetchActivity();
+            onActivityUpdate?.();
+          }}
+        />
+      )}
+
+      {/* Measurement log dialog from measurement list */}
+      {showAddMeasurement && selectedMeasurement && (
         <LogMeasurementDialog
           open={showAddMeasurement}
           onOpenChange={setShowAddMeasurement}
-          measurement={selectedMeasurement ? measurements.find(m => m.id === selectedMeasurement.id) || { id: "", name: "", unit: null } : { id: "", name: "", unit: null }}
+          measurement={selectedMeasurement}
           onLogAdded={() => {
-            fetchActivity();
             setShowAddMeasurement(false);
+            fetchActivity();
             onActivityUpdate?.();
           }}
         />
       )}
 
+      {/* AI Health Review dialog */}
       <AIHealthReviewDialog
         open={showAIReview}
         onOpenChange={setShowAIReview}
-        child={{
-          name: child.name,
-          dateOfBirth: child.date_of_birth || undefined,
-          age: child.date_of_birth 
-            ? Math.floor((new Date().getTime() - new Date(child.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-            : undefined,
-          gender: child.gender || undefined,
-          allergies: child.allergies || undefined,
-          diagnoses: child.diagnoses || undefined,
-        }}
-        recentActivity={activity.filter(item => {
-          const itemTime = new Date(item.timestamp).getTime();
-          const now = new Date().getTime();
-          const hours48 = 48 * 60 * 60 * 1000;
-          return now - itemTime <= hours48;
-        }).map(item => ({
-          type: item.type,
-          name: item.name,
-          timestamp: new Date(item.timestamp).toLocaleString(),
-          value: item.value,
-          quantity: item.quantity,
-          notes: item.notes,
-          dosage: item.dosage,
-        }))}
+        child={child}
+        recentActivity={activityForAIReview}
       />
     </div>
   );
