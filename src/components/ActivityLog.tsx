@@ -36,7 +36,7 @@ interface NoteItem {
 
 interface ActivityItem {
   id: string;
-  type: "medication" | "measurement" | "note";
+  type: "medication" | "measurement" | "note" | "ai_review";
   name: string;
   timestamp: string;
   value?: string;
@@ -49,6 +49,10 @@ interface ActivityItem {
   accurate_medical_name?: string | null;
   dosage?: string | null;
   content?: string;
+  // AI Review fields
+  severity?: number;
+  assessment?: string;
+  watch_for?: string;
 }
 
 interface ChildData {
@@ -153,6 +157,14 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
         .order("recorded_at", { ascending: false })
         .limit(50);
 
+      // Fetch AI reviews
+      const { data: aiReviewsData } = await supabase
+        .from("ai_reviews")
+        .select("*")
+        .eq("child_id", childId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
       const combined: ActivityItem[] = [
         ...(medLogs || []).map((log: any) => {
           // Use log's custom wait_hours if set, otherwise use medication's default
@@ -190,6 +202,15 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           name: "Note",
           timestamp: note.recorded_at,
           content: note.content,
+        })),
+        ...(aiReviewsData || []).map((review: any) => ({
+          id: review.id,
+          type: "ai_review" as const,
+          name: "AI Health Review",
+          timestamp: review.created_at,
+          severity: review.severity,
+          assessment: review.assessment,
+          watch_for: review.watch_for,
         })),
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -390,33 +411,44 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   const shortDate = logDateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                   const time = logDateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
                   
-                  return (
-                    <Card 
-                      key={item.id} 
-                      className={item.type === "measurement" || item.type === "note" ? "p-2 cursor-pointer hover:border-primary transition-all duration-200" : "p-3 cursor-pointer hover:border-primary transition-all duration-200"}
-                      onClick={() => {
-                        if (item.type === "note") {
-                          setEditingNote({
-                            id: item.id,
-                            content: item.content || "",
-                            recorded_at: item.timestamp,
-                          });
-                        } else {
-                          setEditingLog(item);
-                        }
-                      }}
-                    >
-                      {item.type === "note" ? (
-                        // Note card - MAGENTA color
-                        <div className="flex items-start gap-2">
-                          <span className="text-magenta flex-shrink-0">[N]</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm uppercase text-magenta">{item.content}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {timeSince.toUpperCase()} | {shortDate.toUpperCase()} {time.toUpperCase()}
-                            </p>
+                    return (
+                      <Card 
+                        key={item.id} 
+                        className={item.type === "measurement" || item.type === "note" || item.type === "ai_review" ? "p-2 cursor-pointer hover:border-primary transition-all duration-200" : "p-3 cursor-pointer hover:border-primary transition-all duration-200"}
+                        onClick={() => {
+                          if (item.type === "note") {
+                            setEditingNote({
+                              id: item.id,
+                              content: item.content || "",
+                              recorded_at: item.timestamp,
+                            });
+                          } else if (item.type !== "ai_review") {
+                            setEditingLog(item);
+                          }
+                        }}
+                      >
+                        {item.type === "ai_review" ? (
+                          // AI Review card - PRIMARY color with severity on right
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <Bot className="h-4 w-4 text-primary" />
+                              <p className="text-base uppercase truncate text-primary">AI HEALTH REVIEW</p>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-lg text-primary">{item.severity}/5</p>
+                            </div>
                           </div>
-                        </div>
+                        ) : item.type === "note" ? (
+                          // Note card - MAGENTA color
+                          <div className="flex items-start gap-2">
+                            <span className="text-magenta flex-shrink-0">[N]</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm uppercase text-magenta">{item.content}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {timeSince.toUpperCase()} | {shortDate.toUpperCase()} {time.toUpperCase()}
+                              </p>
+                            </div>
+                          </div>
                       ) : item.type === "measurement" ? (
                         // Compact health tracking card - CYAN color
                         <div className="flex items-center justify-between gap-2">
