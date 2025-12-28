@@ -20,13 +20,14 @@ interface ChildProfile {
 }
 
 interface ActivityItem {
-  type: "medication" | "measurement";
+  type: "medication" | "measurement" | "note";
   name: string;
   timestamp: string;
   value?: string;
   quantity?: string;
   notes?: string;
   dosage?: string;
+  content?: string;
 }
 
 interface AIHealthReviewDialogProps {

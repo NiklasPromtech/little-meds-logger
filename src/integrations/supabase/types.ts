@@ -234,6 +234,38 @@ export type Database = {
           },
         ]
       }
+      notes: {
+        Row: {
+          child_id: string
+          content: string
+          created_by: string
+          id: string
+          recorded_at: string
+        }
+        Insert: {
+          child_id: string
+          content: string
+          created_by: string
+          id?: string
+          recorded_at?: string
+        }
+        Update: {
+          child_id?: string
+          content?: string
+          created_by?: string
+          id?: string
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
