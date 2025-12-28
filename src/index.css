@@ -118,7 +118,6 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'VT323', monospace;
-    text-shadow: 0 0 2px hsl(120 100% 50% / 0.3);
     position: relative;
   }
 
@@ -148,10 +147,7 @@
     z-index: 9998;
   }
 
-  /* Phosphor glow on headings only */
-  h1, h2, h3, h4, h5, h6 {
-    text-shadow: 0 0 3px currentColor;
-  }
+  /* No automatic glow - use .terminal-glow class when needed */
 
   /* No glow on body text for readability */
   p, span, a, button, label {
