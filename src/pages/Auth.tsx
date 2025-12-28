@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Heart } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -61,67 +60,88 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-md p-8">
-        <div className="flex items-center justify-center mb-8">
-          <Heart className="h-12 w-12 text-primary" />
-        </div>
-        <h1 className="text-3xl font-bold text-center mb-2">KidCare</h1>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md p-8 border-2 border-primary shadow-[0_0_30px_hsl(120_100%_50%/0.2)]">
+        <pre className="text-primary text-xs sm:text-sm leading-tight text-center mb-6">
+{`╔════════════════════════════════╗
+║   KIDCARE MEDICAL TERMINAL     ║
+║   AUTHENTICATION REQUIRED      ║
+╚════════════════════════════════╝`}
+        </pre>
+        
+        <h1 className="text-2xl uppercase tracking-wider text-center mb-2">
+          {isLogin ? "SYSTEM LOGIN" : "NEW USER REGISTRATION"}
+        </h1>
         <p className="text-muted-foreground text-center mb-8">
-          {isLogin ? "Welcome back" : "Create your account"}
+          {isLogin ? "ENTER CREDENTIALS TO ACCESS" : "CREATE NEW OPERATOR ACCOUNT"}
         </p>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-6">
           {!isLogin && (
             <div>
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName" className="text-muted-foreground uppercase">
+                OPERATOR NAME:
+              </Label>
               <Input
                 id="fullName"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                placeholder="Enter your name"
+                placeholder="_"
+                className="mt-1"
               />
             </div>
           )}
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-muted-foreground uppercase">
+              EMAIL ADDRESS:
+            </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="you@example.com"
+              placeholder="_"
+              className="mt-1"
             />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-muted-foreground uppercase">
+              PASSWORD:
+            </Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder="********"
               minLength={6}
+              className="mt-1"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+            {loading ? (
+              <>PROCESSING<span className="animate-blink">█</span></>
+            ) : isLogin ? (
+              "[ENTER] LOGIN"
+            ) : (
+              "[ENTER] REGISTER"
+            )}
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center border-t border-border pt-4">
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-primary hover:underline"
+            className="text-base text-muted-foreground hover:text-primary transition-colors uppercase"
           >
             {isLogin
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
+              ? "[N] CREATE NEW ACCOUNT"
+              : "[L] EXISTING USER LOGIN"}
           </button>
         </div>
       </Card>

@@ -225,7 +225,11 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div className="text-center py-8">
+        <p className="text-primary">LOADING RECORDS<span className="animate-blink">█</span></p>
+      </div>
+    );
   }
 
   const hasItems = medications.length > 0 || measurements.length > 0;
@@ -261,53 +265,58 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
   return (
     <div className="space-y-6">
       {!hasItems ? (
-        <Card className="p-12 text-center backdrop-blur-xl bg-card/80">
-          <Pill className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">Nothing to track yet</h3>
-          <p className="text-muted-foreground mb-6">
-            Add medications or health tracking items in Settings
+        <Card className="p-8 text-center">
+          <pre className="text-muted-foreground text-sm mb-4">
+{`╔═══════════════════════════════════╗
+║  NO TRACKING ITEMS CONFIGURED     ║
+║                                   ║
+║  ACCESS SETTINGS TO ADD ITEMS     ║
+╚═══════════════════════════════════╝`}
+          </pre>
+          <p className="text-muted-foreground">
+            ADD MEDICATIONS OR MEASUREMENTS IN SETTINGS
           </p>
         </Card>
       ) : (
         <>
 
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Activity</h3>
+        <div className="border border-border p-4">
+          <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+            <h3 className="text-lg uppercase tracking-wider">&gt; ACTIVITY LOG</h3>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => setShowAIReview(true)}
-                className="text-xs h-7 px-2"
+                className="text-sm h-8 px-3"
               >
                 <Bot className="h-3 w-3 mr-1" />
-                AI Review
+                [AI]
               </Button>
-              <div className="flex gap-1 bg-muted rounded-lg p-1">
+              <div className="flex gap-1">
                 <Button
                   size="sm"
-                  variant={filter === "all" ? "default" : "ghost"}
+                  variant={filter === "all" ? "default" : "outline"}
                   onClick={() => setFilter("all")}
-                  className="text-xs h-7 px-3"
+                  className="text-sm h-8 px-3"
                 >
-                  All
+                  [F1] ALL
                 </Button>
                 <Button
                   size="sm"
-                  variant={filter === "medication" ? "default" : "ghost"}
+                  variant={filter === "medication" ? "default" : "outline"}
                   onClick={() => setFilter("medication")}
-                  className="text-xs h-7 px-3"
+                  className="text-sm h-8 px-3"
                 >
-                  Medication
+                  [F2] MEDS
                 </Button>
                 <Button
                   size="sm"
-                  variant={filter === "health" ? "default" : "ghost"}
+                  variant={filter === "health" ? "default" : "outline"}
                   onClick={() => setFilter("health")}
-                  className="text-xs h-7 px-3"
+                  className="text-sm h-8 px-3"
                 >
-                  Health
+                  [F3] HEALTH
                 </Button>
               </div>
             </div>
@@ -320,8 +329,8 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
               onAddClick={() => setShowAddMeasurement(true)}
             />
           ) : filteredActivity.length === 0 ? (
-            <Card className="p-8 text-center backdrop-blur-xl bg-card/80">
-              <p className="text-muted-foreground">No activity logged yet</p>
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">NO RECORDS FOUND</p>
             </Card>
           ) : (
               <div className="space-y-2">
@@ -338,100 +347,80 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                   return (
                     <Card 
                       key={item.id} 
-                      className={item.type === "measurement" ? "p-2 cursor-pointer backdrop-blur-xl bg-card/80 hover:bg-card transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] border-border/50" : "p-3 cursor-pointer backdrop-blur-xl bg-card/80 hover:bg-card transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] border-border/50"}
+                      className={item.type === "measurement" ? "p-2 cursor-pointer hover:border-primary transition-all duration-200" : "p-3 cursor-pointer hover:border-primary transition-all duration-200"}
                       onClick={() => setEditingLog(item)}
                     >
                       {item.type === "measurement" ? (
                         // Compact health tracking card
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div className="w-5 h-5 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                              <span className="text-[10px] font-semibold text-secondary">H</span>
-                            </div>
-                            <p className="font-medium text-xs truncate">{item.name}</p>
+                            <span className="text-muted-foreground">[H]</span>
+                            <p className="text-base uppercase truncate">{item.name}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-semibold text-foreground">{item.value}</p>
+                            <p className="text-lg text-accent">{item.value}</p>
                           </div>
                         </div>
                       ) : (
                         // Medication card with progress
                         <div className="flex items-start gap-3">
                           {waitProgress ? (
-                            <div className="relative flex-shrink-0">
-                              <svg className="w-11 h-11 transform -rotate-90">
-                                <circle
-                                  cx="22"
-                                  cy="22"
-                                  r="18"
-                                  stroke="currentColor"
-                                  strokeWidth="2.5"
-                                  fill="none"
-                                  className="text-muted"
-                                />
-                                <circle
-                                  cx="22"
-                                  cy="22"
-                                  r="18"
-                                  stroke="currentColor"
-                                  strokeWidth="2.5"
-                                  fill="none"
-                                  strokeDasharray={`${2 * Math.PI * 18}`}
-                                  strokeDashoffset={`${2 * Math.PI * 18 * (1 - waitProgress.percentage / 100)}`}
-                                  className={`transition-all duration-1000 ${
-                                    waitProgress.isReady ? "text-primary" : "text-accent"
+                            <div className="flex-shrink-0 w-14 text-center">
+                              <div className="text-lg">
+                                {Math.round(waitProgress.percentage)}%
+                              </div>
+                              <div className="w-full h-2 border border-border mt-1">
+                                <div 
+                                  className={`h-full transition-all duration-1000 ${
+                                    waitProgress.isReady ? "bg-primary" : "bg-accent"
                                   }`}
+                                  style={{ width: `${waitProgress.percentage}%` }}
                                 />
-                              </svg>
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-[10px] font-semibold">
-                                  {Math.round(waitProgress.percentage)}%
-                                </span>
                               </div>
                             </div>
                           ) : (
-                            <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-semibold text-primary">Rx</span>
+                            <div className="flex-shrink-0 w-14 text-center">
+                              <span className="text-lg text-primary">[Rx]</span>
                             </div>
                           )}
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline justify-between gap-2">
-                              <p className="font-semibold text-sm truncate">{item.name}</p>
+                              <p className="text-base uppercase truncate">{item.name}</p>
                               {waitProgress && (
-                                <span className={`text-xs font-medium flex-shrink-0 ${
-                                  waitProgress.isReady ? "text-primary" : "text-muted-foreground"
+                                <span className={`text-base flex-shrink-0 ${
+                                  waitProgress.isReady ? "text-primary" : "text-accent"
                                 }`}>
-                                  {waitProgress.isReady ? "Ready" : timeUntil}
+                                  {waitProgress.isReady ? "[READY]" : timeUntil?.toUpperCase()}
                                 </span>
                               )}
                             </div>
                             
                             {item.accurate_medical_name && (
-                              <p className="text-xs text-muted-foreground truncate mt-0.5">
-                                {item.accurate_medical_name}
+                              <p className="text-sm text-muted-foreground truncate">
+                                {item.accurate_medical_name.toUpperCase()}
                               </p>
                             )}
                             
-                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                              {item.dosage && <span>{item.dosage}</span>}
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              {item.dosage && <span>{item.dosage.toUpperCase()}</span>}
                               {item.quantity && (
                                 <>
-                                  {item.dosage && <span>•</span>}
-                                  <span>Qty: {item.quantity}</span>
+                                  {item.dosage && <span>|</span>}
+                                  <span>QTY: {item.quantity.toUpperCase()}</span>
                                 </>
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-                              <span>{timeSince}</span>
-                              <span>•</span>
-                              <span>{shortDate} {time}</span>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              <span>{timeSince.toUpperCase()}</span>
+                              <span>|</span>
+                              <span>{shortDate.toUpperCase()} {time.toUpperCase()}</span>
                             </div>
                             
                             {item.notes && (
-                              <p className="text-xs text-muted-foreground italic mt-1 truncate">
-                                {item.notes}
+                              <p className="text-sm text-muted-foreground mt-1 truncate">
+                                NOTE: {item.notes.toUpperCase()}
                               </p>
                             )}
                           </div>
@@ -441,8 +430,8 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                            item.medication_id &&
                            mostRecentMedicationLogs.get(item.medication_id) === item.id && (
                             <Button
-                              size="icon"
-                              className="h-9 w-9 rounded-full flex-shrink-0 transition-all duration-200 hover:scale-110 active:scale-95"
+                              size="sm"
+                              className="flex-shrink-0"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setLogAgainItem(item);

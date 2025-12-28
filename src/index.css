@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* DOS-Era Medical Terminal Design System
+   All colors in HSL format for theming
 */
 
 @layer base {
@@ -13,89 +13,84 @@ All colors MUST be HSL.
     --safe-area-inset-left: env(safe-area-inset-left, 0px);
     --safe-area-inset-right: env(safe-area-inset-right, 0px);
     
-    --background: 0 0% 100%;
-    --foreground: 220 15% 20%;
+    /* CRT Black Background */
+    --background: 0 0% 0%;
+    --foreground: 120 100% 50%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 20%;
+    /* Terminal Green Cards */
+    --card: 120 20% 5%;
+    --card-foreground: 120 100% 50%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 20%;
+    --popover: 120 20% 5%;
+    --popover-foreground: 120 100% 50%;
 
-    --primary: 180 60% 45%;
-    --primary-foreground: 0 0% 100%;
+    /* Bright Phosphor Green */
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 180 25% 92%;
-    --secondary-foreground: 180 60% 25%;
+    /* Dimmer Green for secondary elements */
+    --secondary: 120 60% 25%;
+    --secondary-foreground: 120 100% 50%;
 
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 10% 45%;
+    /* Very dim for muted elements */
+    --muted: 120 30% 10%;
+    --muted-foreground: 120 60% 40%;
 
-    --accent: 15 80% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* Amber/Orange for warnings and accents */
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
+    /* Red alert */
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 180 60% 45%;
+    /* Terminal green borders */
+    --border: 120 50% 25%;
+    --input: 120 50% 25%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.75rem;
+    /* Sharp corners for DOS aesthetic */
+    --radius: 0px;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 120 100% 50%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 120 20% 10%;
+    --sidebar-accent-foreground: 120 100% 50%;
+    --sidebar-border: 120 50% 25%;
+    --sidebar-ring: 120 100% 50%;
   }
 
+  /* Dark mode uses same colors - it's always dark like a CRT */
   .dark {
-    --background: 220 15% 5%;
-    --foreground: 0 0% 92%;
-
-    --card: 220 13% 9%;
-    --card-foreground: 0 0% 92%;
-
-    --popover: 220 13% 9%;
-    --popover-foreground: 0 0% 92%;
-
-    --primary: 266 94% 76%;
-    --primary-foreground: 220 15% 5%;
-
-    --secondary: 174 98% 43%;
-    --secondary-foreground: 220 15% 5%;
-
-    --muted: 220 13% 15%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 174 98% 43%;
-    --accent-foreground: 220 15% 5%;
-
-    --destructive: 349 49% 61%;
-    --destructive-foreground: 220 15% 5%;
-
-    --border: 220 13% 13%;
-    --input: 220 13% 13%;
-    --ring: 266 94% 76%;
-    --sidebar-background: 220 15% 5%;
-    --sidebar-foreground: 0 0% 92%;
-    --sidebar-primary: 266 94% 76%;
-    --sidebar-primary-foreground: 220 15% 5%;
-    --sidebar-accent: 220 13% 9%;
-    --sidebar-accent-foreground: 0 0% 92%;
-    --sidebar-border: 220 13% 13%;
-    --sidebar-ring: 266 94% 76%;
+    --background: 0 0% 0%;
+    --foreground: 120 100% 50%;
+    --card: 120 20% 5%;
+    --card-foreground: 120 100% 50%;
+    --popover: 120 20% 5%;
+    --popover-foreground: 120 100% 50%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 120 60% 25%;
+    --secondary-foreground: 120 100% 50%;
+    --muted: 120 30% 10%;
+    --muted-foreground: 120 60% 40%;
+    --accent: 45 100% 50%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 120 50% 25%;
+    --input: 120 50% 25%;
+    --ring: 120 100% 50%;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 120 100% 50%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 120 20% 10%;
+    --sidebar-accent-foreground: 120 100% 50%;
+    --sidebar-border: 120 50% 25%;
+    --sidebar-ring: 120 100% 50%;
   }
 }
 
@@ -104,12 +99,110 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    font-family: 'VT323', monospace;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: 'VT323', monospace;
+    text-shadow: 0 0 5px hsl(120 100% 50% / 0.5);
+    position: relative;
+  }
+
+  /* CRT Scanline effect overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 0, 0.03) 0px,
+      rgba(0, 255, 0, 0.03) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    z-index: 9999;
+  }
+
+  /* Subtle CRT vignette effect */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    z-index: 9998;
+  }
+
+  /* Phosphor glow on all text */
+  h1, h2, h3, h4, h5, h6, p, span, a, button, label {
+    text-shadow: 0 0 5px currentColor;
+  }
+
+  /* Blinking cursor class */
+  .cursor-blink::after {
+    content: "█";
+    animation: blink 1s step-end infinite;
+  }
+}
+
+@layer utilities {
+  /* Terminal box decorations */
+  .terminal-box {
+    border: 1px solid hsl(var(--border));
+    position: relative;
   }
   
-  /* Smooth transitions */
-  * {
-    @apply transition-colors duration-200;
+  .terminal-box::before {
+    content: "╔";
+    position: absolute;
+    top: -1px;
+    left: -1px;
   }
+  
+  .terminal-box::after {
+    content: "╗";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+  }
+
+  /* ASCII header decoration */
+  .ascii-header {
+    font-family: 'VT323', monospace;
+    white-space: pre;
+    line-height: 1.2;
+  }
+
+  /* Terminal glow effect */
+  .terminal-glow {
+    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+
+  /* DOS-style selection */
+  ::selection {
+    background-color: hsl(120 100% 50%);
+    color: hsl(0 0% 0%);
+  }
+}
+
+/* Custom scrollbar for terminal aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(0 0% 0%);
+  border-left: 1px solid hsl(120 50% 25%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(120 50% 25%);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(120 100% 50%);
 }

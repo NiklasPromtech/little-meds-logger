@@ -75,8 +75,8 @@ const Child = () => {
             console.log('[Realtime] Showing toast for:', medication.name, 'by', giver?.full_name);
 
             toast({
-              title: "Medication Logged",
-              description: `${giver?.full_name || 'A caregiver'} gave ${medication.name}`,
+              title: "MEDICATION LOGGED",
+              description: `${giver?.full_name || 'OPERATOR'} ADMINISTERED ${medication.name.toUpperCase()}`,
             });
 
             setRefreshTrigger(prev => prev + 1);
@@ -123,13 +123,15 @@ const Child = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.fillStyle = childData.color;
-    ctx.beginPath();
-    ctx.arc(32, 32, 32, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, 64, 64);
+    
+    ctx.strokeStyle = "#00FF00";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2, 2, 60, 60);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 28px system-ui";
+    ctx.fillStyle = "#00FF00";
+    ctx.font = "bold 28px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(childData.initials, 32, 32);
@@ -139,13 +141,13 @@ const Child = () => {
       link.href = canvas.toDataURL();
     }
 
-    document.title = `${childData.name} - KidCare`;
+    document.title = `${childData.name.toUpperCase()} - KIDCARE TERMINAL`;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-primary">LOADING PATIENT DATA<span className="animate-blink">█</span></p>
       </div>
     );
   }
@@ -154,24 +156,29 @@ const Child = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background pb-24">
-      <header className="border-b sticky top-0 backdrop-blur-xl bg-background/80 z-10" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
+      <header className="border-b border-border sticky top-0 bg-background z-10" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white flex-shrink-0 shadow-lg"
-                style={{ backgroundColor: child.color }}
+                className="w-12 h-12 border-2 flex items-center justify-center text-lg font-normal flex-shrink-0"
+                style={{ borderColor: child.color, color: child.color }}
               >
                 {child.initials}
               </div>
-              <h1 className="text-xl font-bold truncate">{child.name}</h1>
+              <div className="min-w-0">
+                <h1 className="text-xl uppercase tracking-wider truncate">{child.name}</h1>
+                <p className="text-sm text-muted-foreground">
+                  ID: {child.id.slice(0, 8).toUpperCase()}
+                </p>
+              </div>
             </div>
 
-            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} className="rounded-full">
+            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
               <Settings2 className="h-5 w-5" />
             </Button>
           </div>
