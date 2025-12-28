@@ -17,15 +17,16 @@ interface CreateChildDialogProps {
   onChildCreated: () => void;
 }
 
+// DOS-era terminal colors
 const COLORS = [
-  "#14B8A6", // Teal
-  "#F97316", // Orange
-  "#8B5CF6", // Purple
-  "#EC4899", // Pink
-  "#10B981", // Green
-  "#3B82F6", // Blue
-  "#F59E0B", // Amber
-  "#EF4444", // Red
+  "#00FF00", // Classic CRT Green
+  "#00FFFF", // Cyan
+  "#FF00FF", // Magenta
+  "#FFFF00", // Amber/Yellow
+  "#FF6B35", // Orange
+  "#00FF88", // Mint green
+  "#FF5555", // Red
+  "#AAAAAA", // Gray/White
 ];
 
 export function CreateChildDialog({
@@ -104,14 +105,19 @@ export function CreateChildDialog({
                 <button
                   key={color}
                   type="button"
-                  className={`w-10 h-10 rounded-full border-2 transition-all ${
+                  className={`w-10 h-10 border-2 transition-all ${
                     selectedColor === color
                       ? "border-primary scale-110"
-                      : "border-transparent"
+                      : "border-muted-foreground"
                   }`}
-                  style={{ backgroundColor: color }}
+                  style={{ backgroundColor: 'transparent', borderColor: selectedColor === color ? undefined : color }}
                   onClick={() => setSelectedColor(color)}
-                />
+                >
+                  <div 
+                    className="w-full h-full" 
+                    style={{ backgroundColor: color, opacity: selectedColor === color ? 1 : 0.5 }}
+                  />
+                </button>
               ))}
             </div>
           </div>

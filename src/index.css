@@ -34,11 +34,19 @@
 
     /* Very dim for muted elements */
     --muted: 120 30% 10%;
-    --muted-foreground: 120 60% 40%;
+    --muted-foreground: 0 0% 55%;
 
-    /* Amber/Orange for warnings and accents */
+    /* Amber/Yellow for warnings and medications */
     --accent: 45 100% 50%;
     --accent-foreground: 0 0% 0%;
+
+    /* Cyan for health metrics */
+    --cyan: 180 100% 50%;
+    --cyan-foreground: 0 0% 0%;
+
+    /* Magenta for highlights */
+    --magenta: 320 100% 60%;
+    --magenta-foreground: 0 0% 0%;
 
     /* Red alert */
     --destructive: 0 100% 50%;
@@ -75,9 +83,13 @@
     --secondary: 120 60% 25%;
     --secondary-foreground: 120 100% 50%;
     --muted: 120 30% 10%;
-    --muted-foreground: 120 60% 40%;
+    --muted-foreground: 0 0% 55%;
     --accent: 45 100% 50%;
     --accent-foreground: 0 0% 0%;
+    --cyan: 180 100% 50%;
+    --cyan-foreground: 0 0% 0%;
+    --magenta: 320 100% 60%;
+    --magenta-foreground: 0 0% 0%;
     --destructive: 0 100% 50%;
     --destructive-foreground: 0 0% 0%;
     --border: 120 50% 25%;
@@ -106,7 +118,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'VT323', monospace;
-    text-shadow: 0 0 5px hsl(120 100% 50% / 0.5);
+    text-shadow: 0 0 2px hsl(120 100% 50% / 0.3);
     position: relative;
   }
 
@@ -136,9 +148,14 @@
     z-index: 9998;
   }
 
-  /* Phosphor glow on all text */
-  h1, h2, h3, h4, h5, h6, p, span, a, button, label {
-    text-shadow: 0 0 5px currentColor;
+  /* Phosphor glow on headings only */
+  h1, h2, h3, h4, h5, h6 {
+    text-shadow: 0 0 3px currentColor;
+  }
+
+  /* No glow on body text for readability */
+  p, span, a, button, label {
+    text-shadow: none;
   }
 
   /* Blinking cursor class */
@@ -176,9 +193,38 @@
     line-height: 1.2;
   }
 
-  /* Terminal glow effect */
+  /* Terminal glow effect - for intentional emphasis */
   .terminal-glow {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+  }
+
+  /* Color utility classes */
+  .text-terminal-amber {
+    color: hsl(var(--accent));
+  }
+  
+  .text-terminal-cyan {
+    color: hsl(var(--cyan));
+  }
+  
+  .text-terminal-magenta {
+    color: hsl(var(--magenta));
+  }
+  
+  .bg-terminal-amber {
+    background-color: hsl(var(--accent));
+  }
+  
+  .bg-terminal-cyan {
+    background-color: hsl(var(--cyan));
+  }
+  
+  .border-terminal-amber {
+    border-color: hsl(var(--accent));
+  }
+  
+  .border-terminal-cyan {
+    border-color: hsl(var(--cyan));
   }
 
   /* DOS-style selection */
