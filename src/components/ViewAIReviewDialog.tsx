@@ -126,58 +126,58 @@ export function ViewAIReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md z-[100]">
-        <DialogHeader>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col z-[100]">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>AI Health Review</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           <p className="text-xs text-muted-foreground">
             Logged {formattedDate} at {formattedTime}
           </p>
 
-          <div className={`p-4 rounded-lg border ${getSeverityColor(review.severity)}`}>
-            <div className="flex items-center gap-3 mb-2">
+          <div className={`p-3 rounded-lg border ${getSeverityColor(review.severity)}`}>
+            <div className="flex items-center gap-3">
               {getSeverityIcon(review.severity)}
               <div>
-                <p className="font-semibold">Level {review.severity}/5</p>
-                <p className="text-sm">{getSeverityLabel(review.severity)}</p>
+                <p className="font-semibold text-sm">Level {review.severity}/5</p>
+                <p className="text-xs">{getSeverityLabel(review.severity)}</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div>
-              <h4 className="font-medium text-sm mb-1">Assessment</h4>
-              <p className="text-sm text-muted-foreground">{review.assessment}</p>
+              <h4 className="font-medium text-xs mb-1 text-terminal-amber">Assessment</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">{review.assessment}</p>
             </div>
 
             <div>
-              <h4 className="font-medium text-sm mb-1">What to Watch For</h4>
-              <p className="text-sm text-muted-foreground">{review.watch_for}</p>
+              <h4 className="font-medium text-xs mb-1 text-terminal-amber">What to Watch For</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">{review.watch_for}</p>
             </div>
           </div>
 
-          <div className="bg-muted/50 p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground text-center">
+          <div className="bg-muted/50 p-2 rounded-lg">
+            <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
               ⚠️ <strong>Disclaimer:</strong> This is NOT medical advice. This assessment is for informational purposes only. Always consult a healthcare professional for medical decisions.
             </p>
           </div>
-
-          <Button 
-            variant="destructive" 
-            className="w-full" 
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            {deleting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Trash2 className="h-4 w-4 mr-2" />
-            )}
-            Delete Review
-          </Button>
         </div>
+
+        <Button 
+          variant="destructive" 
+          className="w-full flex-shrink-0 mt-3" 
+          onClick={handleDelete}
+          disabled={deleting}
+        >
+          {deleting ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Trash2 className="h-4 w-4 mr-2" />
+          )}
+          Delete Review
+        </Button>
       </DialogContent>
     </Dialog>
   );
