@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Heart, Plus, LogOut } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
 import { CreateChildDialog } from "@/components/CreateChildDialog";
 
 interface Child {
@@ -55,62 +55,77 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <header className="border-b backdrop-blur-xl bg-background/80" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Heart className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">KidCare</h1>
+      <header className="border-b border-border" style={{ paddingTop: 'var(--safe-area-inset-top)' }}>
+        <div className="container mx-auto px-4 py-4">
+          <pre className="text-primary text-xs sm:text-sm leading-tight mb-2">
+{`╔════════════════════════════════════════════════╗
+║  KIDCARE MEDICAL TERMINAL v1.0                 ║
+║  PATIENT MONITORING SYSTEM                     ║
+╚════════════════════════════════════════════════╝`}
+          </pre>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-muted-foreground text-sm">SYSTEM READY</span>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              [LOGOUT]
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut} className="rounded-full">
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 min-h-[calc(100dvh-5rem)]">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Your Children</h2>
-            <p className="text-muted-foreground">
-              Track medications and measurements for each child
-            </p>
-          </div>
+      <main className="container mx-auto px-4 py-8 min-h-[calc(100dvh-10rem)]">
+        <div className="mb-6">
+          <h2 className="text-2xl uppercase tracking-wider mb-1">
+            &gt; PATIENT DATABASE
+          </h2>
+          <p className="text-muted-foreground">
+            SELECT PATIENT TO VIEW MEDICAL RECORDS
+          </p>
         </div>
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-primary">LOADING DATA<span className="animate-blink">█</span></p>
           </div>
         ) : children.length === 0 ? (
-          <Card className="p-12 text-center backdrop-blur-xl bg-card/80">
-            <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-xl font-semibold mb-2">No children yet</h3>
-            <p className="text-muted-foreground mb-6">
-              Add your first child to start tracking their care
-            </p>
-            <Button onClick={() => setShowCreateDialog(true)} className="rounded-full">
+          <Card className="p-8 text-center">
+            <pre className="text-muted-foreground text-sm mb-4">
+{`╔══════════════════════════════════╗
+║  NO PATIENTS ON FILE             ║
+║                                  ║
+║  PRESS [N] TO ADD NEW PATIENT    ║
+╚══════════════════════════════════╝`}
+            </pre>
+            <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Your First Child
+              [N] NEW PATIENT
             </Button>
           </Card>
         ) : (
-          <div className="flex flex-col gap-3">
-            {children.map((child) => (
+          <div className="flex flex-col gap-2">
+            {children.map((child, index) => (
               <Card
                 key={child.id}
-                className="group relative cursor-pointer backdrop-blur-xl bg-card/80 border hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/10 overflow-hidden"
+                className="group cursor-pointer hover:border-primary transition-all duration-200"
                 onClick={() => navigate(`/child/${child.id}`)}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-secondary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10 flex items-center gap-3 p-3">
+                <div className="flex items-center gap-4 p-4">
+                  <span className="text-muted-foreground">[{index + 1}]</span>
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-lg ring-1 ring-background/20 group-hover:scale-105 transition-transform duration-300"
-                    style={{ backgroundColor: child.color }}
+                    className="w-10 h-10 border-2 border-current flex items-center justify-center text-sm font-normal"
+                    style={{ borderColor: child.color, color: child.color }}
                   >
                     {child.initials}
                   </div>
-                  <h3 className="text-lg font-semibold">{child.name}</h3>
+                  <div className="flex-1">
+                    <p className="text-lg uppercase tracking-wider">{child.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      PATIENT ID: {child.id.slice(0, 8).toUpperCase()}
+                    </p>
+                  </div>
+                  <span className="text-muted-foreground group-hover:text-primary transition-colors">
+                    &gt;&gt;
+                  </span>
                 </div>
               </Card>
             ))}
@@ -121,11 +136,11 @@ const Dashboard = () => {
       <div className="fixed left-1/2 -translate-x-1/2 z-50" style={{ bottom: 'calc(1.5rem + var(--safe-area-inset-bottom))' }}>
         <Button
           size="sm"
-          className="h-10 px-5 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-xl text-xs font-medium"
           onClick={() => setShowCreateDialog(true)}
+          className="shadow-[0_0_15px_hsl(120_100%_50%/0.3)]"
         >
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          Add Child
+          <Plus className="h-4 w-4 mr-2" />
+          [N] ADD PATIENT
         </Button>
       </div>
 
