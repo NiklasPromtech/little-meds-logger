@@ -82,9 +82,16 @@ interface ChildSettingsSheetProps {
   onUpdate: () => void;
 }
 
+// DOS-era terminal colors
 const PRESET_COLORS = [
-  "#14B8A6", "#F97316", "#8B5CF6", "#EC4899", 
-  "#3B82F6", "#10B981", "#F59E0B", "#EF4444"
+  "#00FF00", // Classic CRT Green
+  "#00FFFF", // Cyan
+  "#FF00FF", // Magenta
+  "#FFFF00", // Amber/Yellow
+  "#FF6B35", // Orange
+  "#00FF88", // Mint green
+  "#FF5555", // Red
+  "#AAAAAA", // Gray/White
 ];
 
 export function ChildSettingsSheet({ 
@@ -328,19 +335,24 @@ export function ChildSettingsSheet({
               </div>
               <div>
                 <Label>Color</Label>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-2 flex-wrap">
                   {PRESET_COLORS.map((color) => (
                     <button
                       key={color}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        childColor === color ? "border-foreground scale-110" : "border-transparent"
+                      className={`w-10 h-10 border-2 transition-all ${
+                        childColor === color ? "border-primary scale-110" : "border-muted-foreground"
                       }`}
-                      style={{ backgroundColor: color }}
+                      style={{ backgroundColor: 'transparent', borderColor: childColor === color ? undefined : color }}
                       onClick={() => {
                         setChildColor(color);
                         setTimeout(handleUpdateChild, 100);
                       }}
-                    />
+                    >
+                      <div 
+                        className="w-full h-full" 
+                        style={{ backgroundColor: color, opacity: childColor === color ? 1 : 0.5 }}
+                      />
+                    </button>
                   ))}
                 </div>
               </div>

@@ -351,22 +351,22 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                       onClick={() => setEditingLog(item)}
                     >
                       {item.type === "measurement" ? (
-                        // Compact health tracking card
+                        // Compact health tracking card - CYAN color
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="text-muted-foreground">[H]</span>
-                            <p className="text-base uppercase truncate">{item.name}</p>
+                            <span className="text-cyan">[H]</span>
+                            <p className="text-base uppercase truncate text-cyan">{item.name}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-lg text-accent">{item.value}</p>
+                            <p className="text-lg text-cyan">{item.value}</p>
                           </div>
                         </div>
                       ) : (
-                        // Medication card with progress
+                        // Medication card with progress - AMBER color
                         <div className="flex items-start gap-3">
                           {waitProgress ? (
                             <div className="flex-shrink-0 w-14 text-center">
-                              <div className="text-lg">
+                              <div className={`text-lg ${waitProgress.isReady ? "text-primary" : "text-accent"}`}>
                                 {Math.round(waitProgress.percentage)}%
                               </div>
                               <div className="w-full h-2 border border-border mt-1">
@@ -380,13 +380,13 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
                             </div>
                           ) : (
                             <div className="flex-shrink-0 w-14 text-center">
-                              <span className="text-lg text-primary">[Rx]</span>
+                              <span className="text-lg text-accent">[Rx]</span>
                             </div>
                           )}
                           
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline justify-between gap-2">
-                              <p className="text-base uppercase truncate">{item.name}</p>
+                              <p className="text-base uppercase truncate text-accent">{item.name}</p>
                               {waitProgress && (
                                 <span className={`text-base flex-shrink-0 ${
                                   waitProgress.isReady ? "text-primary" : "text-accent"
