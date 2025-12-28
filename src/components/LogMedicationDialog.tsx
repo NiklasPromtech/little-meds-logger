@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 interface Medication {
   id: string;
@@ -71,18 +71,15 @@ export function LogMedicationDialog({
     }
   };
 
-  // Parse the dosage to extract unit (e.g., "5 ml" -> "ml", "1 puff" -> "puff")
+  // Parse the dosage to extract unit
   const getDosageUnit = (dosage: string | null): string | null => {
     if (!dosage) return null;
     
     const lowerDosage = dosage.toLowerCase();
-    
-    // Common medication units
     const units = ['ml', 'mg', 'puff', 'puffs', 'drop', 'drops', 'tablet', 'tablets', 'capsule', 'capsules', 'teaspoon', 'tsp', 'tablespoon', 'tbsp', 'unit', 'units', 'spray', 'sprays', 'patch', 'patches'];
     
     for (const unit of units) {
       if (lowerDosage.includes(unit)) {
-        // Normalize plural forms
         if (unit === 'puffs') return 'puff';
         if (unit === 'drops') return 'drop';
         if (unit === 'tablets') return 'tablet';
@@ -101,16 +98,13 @@ export function LogMedicationDialog({
   const step = useHalves ? 0.5 : 1;
   const minValue = useHalves ? 0.5 : 1;
 
-  // Format quantity for display (remove trailing .0)
   const formatQuantity = (q: number): string => {
     return q % 1 === 0 ? q.toString() : q.toFixed(1);
   };
 
-  // Get plural unit
   const getDisplayUnit = (q: number): string => {
     if (!dosageUnit) return "";
     if (q === 1) return dosageUnit;
-    // Handle plural
     if (dosageUnit.endsWith('s')) return dosageUnit;
     return dosageUnit + 's';
   };
@@ -123,7 +117,6 @@ export function LogMedicationDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Use detected unit or "x" for fallback
       const quantityText = dosageUnit 
         ? `${formatQuantity(quantity)} ${getDisplayUnit(quantity)}`
         : `${formatQuantity(quantity)}x`;
@@ -156,20 +149,18 @@ export function LogMedicationDialog({
   const increment = () => setQuantity(q => Math.min(q + step, 99));
   const decrement = () => setQuantity(q => Math.max(q - step, minValue));
 
-  // When switching modes, adjust quantity if needed
   const handleModeChange = (halves: boolean) => {
     setUseHalves(halves);
     if (!halves && quantity % 1 !== 0) {
-      // Switching to whole mode with a fractional value - round up
       setQuantity(Math.ceil(quantity));
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader className="px-2">
-          <DialogTitle className="text-center">{medication.name}</DialogTitle>
+      <DialogContent className="border-terminal-amber">
+        <DialogHeader className="px-2 border-b-terminal-amber">
+          <DialogTitle className="text-center text-terminal-amber">{medication.name}</DialogTitle>
           <DialogDescription className="text-center">
             {medication.dosage || "Log medication"}
           </DialogDescription>
@@ -183,7 +174,7 @@ export function LogMedicationDialog({
               variant={!useHalves ? "default" : "outline"}
               size="sm"
               onClick={() => handleModeChange(false)}
-              className="font-mono text-xs"
+              className={`font-mono text-xs ${!useHalves ? 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10'}`}
             >
               [WHOLE]
             </Button>
@@ -192,7 +183,7 @@ export function LogMedicationDialog({
               variant={useHalves ? "default" : "outline"}
               size="sm"
               onClick={() => handleModeChange(true)}
-              className="font-mono text-xs"
+              className={`font-mono text-xs ${useHalves ? 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10'}`}
             >
               [HALVES]
             </Button>
@@ -205,13 +196,13 @@ export function LogMedicationDialog({
               variant="outline"
               onClick={decrement}
               disabled={quantity <= minValue}
-              className="h-12 w-12 text-xl font-mono"
+              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
             >
               [-]
             </Button>
             
             <div className="text-center min-w-[80px]">
-              <div className="text-4xl font-bold text-primary font-mono">
+              <div className="text-4xl font-bold text-terminal-amber font-mono">
                 {formatQuantity(quantity)}
               </div>
               {dosageUnit && (
@@ -226,7 +217,7 @@ export function LogMedicationDialog({
               variant="outline"
               onClick={increment}
               disabled={quantity >= 99}
-              className="h-12 w-12 text-xl font-mono"
+              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
             >
               [+]
             </Button>
@@ -234,13 +225,14 @@ export function LogMedicationDialog({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-xs">Notes (optional)</Label>
+            <Label htmlFor="notes" className="text-xs text-terminal-amber">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any additional information..."
               rows={2}
+              className="border-terminal-amber/50 focus:border-terminal-amber"
             />
           </div>
 
@@ -249,7 +241,7 @@ export function LogMedicationDialog({
             <Button
               type="button"
               variant="outline"
-              className="flex-1 font-mono"
+              className="flex-1 font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
             >
@@ -257,7 +249,7 @@ export function LogMedicationDialog({
             </Button>
             <Button 
               type="submit" 
-              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : ''}`}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90'}`}
               disabled={loading || success}
             >
               {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
@@ -267,16 +259,16 @@ export function LogMedicationDialog({
           {/* Recent History */}
           {recentLogs.length > 0 && (
             <>
-              <Separator className="my-4" />
+              <Separator className="my-4 bg-terminal-amber/30" />
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Recent History</Label>
+                <Label className="text-xs text-muted-foreground">Recent</Label>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {recentLogs.map((log) => (
                     <div 
                       key={log.id} 
-                      className="flex items-center justify-between text-xs border border-border/50 p-2"
+                      className="flex items-center justify-between text-xs border border-terminal-amber/30 p-2"
                     >
-                      <span className="text-primary font-mono">
+                      <span className="text-terminal-amber font-mono">
                         {log.quantity || "1x"}
                       </span>
                       <span className="text-muted-foreground">
