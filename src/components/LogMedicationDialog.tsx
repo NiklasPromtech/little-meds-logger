@@ -174,7 +174,7 @@ export function LogMedicationDialog({
               variant={!useHalves ? "default" : "outline"}
               size="sm"
               onClick={() => handleModeChange(false)}
-              className={`font-mono text-xs ${!useHalves ? 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10'}`}
+              className={`font-mono text-xs ${!useHalves ? 'bg-terminal-amber text-black hover:bg-terminal-amber/90 hover:text-black' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber'}`}
             >
               [WHOLE]
             </Button>
@@ -183,7 +183,7 @@ export function LogMedicationDialog({
               variant={useHalves ? "default" : "outline"}
               size="sm"
               onClick={() => handleModeChange(true)}
-              className={`font-mono text-xs ${useHalves ? 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10'}`}
+              className={`font-mono text-xs ${useHalves ? 'bg-terminal-amber text-black hover:bg-terminal-amber/90 hover:text-black' : 'border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber'}`}
             >
               [HALVES]
             </Button>
@@ -196,7 +196,7 @@ export function LogMedicationDialog({
               variant="outline"
               onClick={decrement}
               disabled={quantity <= minValue}
-              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
+              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber disabled:text-terminal-amber/40"
             >
               [-]
             </Button>
@@ -217,7 +217,7 @@ export function LogMedicationDialog({
               variant="outline"
               onClick={increment}
               disabled={quantity >= 99}
-              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
+              className="h-12 w-12 text-xl font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber disabled:text-terminal-amber/40"
             >
               [+]
             </Button>
@@ -241,7 +241,7 @@ export function LogMedicationDialog({
             <Button
               type="button"
               variant="outline"
-              className="flex-1 font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10"
+              className="flex-1 font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
             >
@@ -249,7 +249,7 @@ export function LogMedicationDialog({
             </Button>
             <Button 
               type="submit" 
-              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-amber text-accent-foreground hover:bg-terminal-amber/90'}`}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-amber text-black hover:bg-terminal-amber/90 hover:text-black active:text-black'}`}
               disabled={loading || success}
             >
               {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}

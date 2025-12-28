@@ -83,7 +83,7 @@ export function LogNoteDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 font-mono border-terminal-magenta text-terminal-magenta hover:bg-terminal-magenta/10"
+              className="flex-1 font-mono border-terminal-magenta text-terminal-magenta hover:bg-terminal-magenta/10 hover:text-terminal-magenta active:text-terminal-magenta"
               disabled={loading || success}
             >
               [CANCEL]
@@ -91,7 +91,7 @@ export function LogNoteDialog({
             <Button
               onClick={handleSubmit}
               disabled={loading || success || !content.trim()}
-              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-magenta text-magenta-foreground hover:bg-terminal-magenta/90'}`}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-magenta text-white hover:bg-terminal-magenta/90 hover:text-white active:text-white'}`}
             >
               {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
             </Button>

@@ -189,7 +189,7 @@ export function LogMeasurementDialog({
             <Button
               type="button"
               variant="outline"
-              className="flex-1 font-mono border-terminal-cyan text-terminal-cyan hover:bg-terminal-cyan/10"
+              className="flex-1 font-mono border-terminal-cyan text-terminal-cyan hover:bg-terminal-cyan/10 hover:text-terminal-cyan active:text-terminal-cyan"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
             >
@@ -197,7 +197,7 @@ export function LogMeasurementDialog({
             </Button>
             <Button 
               type="submit" 
-              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500' : 'bg-terminal-cyan text-cyan-foreground hover:bg-terminal-cyan/90'}`}
+              className={`flex-1 font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-cyan text-black hover:bg-terminal-cyan/90 hover:text-black active:text-black'}`}
               disabled={loading || success}
             >
               {success ? "[✓ LOGGED]" : loading ? "[...]" : "[LOG]"}
