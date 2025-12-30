@@ -286,29 +286,31 @@ export function EditMedicationLogDialog({
             />
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="grid grid-cols-3 gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => setShowDeleteConfirm(true)}
-              className="font-mono border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="font-mono text-xs px-2 border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
-              <Trash2 className="h-4 w-4 mr-1" />
-              DELETE
+              <Trash2 className="h-3 w-3 mr-1" />
+              DEL
             </Button>
-            <div className="flex-1" />
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => onOpenChange(false)}
               disabled={loading || success}
-              className="font-mono border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber"
+              className="font-mono text-xs px-2 border-terminal-amber text-terminal-amber hover:bg-terminal-amber/10 hover:text-terminal-amber active:text-terminal-amber"
             >
               CANCEL
             </Button>
             <Button 
               type="submit" 
-              className={`font-mono transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-amber text-black hover:bg-terminal-amber/90 hover:text-black active:text-black'}`}
+              size="sm"
+              className={`font-mono text-xs px-2 transition-all duration-300 ${success ? 'bg-green-500 hover:bg-green-500 text-white' : 'bg-terminal-amber text-black hover:bg-terminal-amber/90 hover:text-black active:text-black'}`}
               disabled={loading || success}
             >
               {success ? "SAVED" : loading ? "..." : "SAVE"}

@@ -575,6 +575,7 @@ export function ActivityLog({ childId, child, onActivityUpdate, refreshTrigger }
           open={!!logAgainItem}
           onOpenChange={(open) => !open && setLogAgainItem(null)}
           medication={medications.find(m => m.id === logAgainItem.medication_id)!}
+          initialQuantity={logAgainItem.quantity}
           onLogAdded={() => {
             setLogAgainItem(null);
             fetchActivity();
