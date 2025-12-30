@@ -34,28 +34,39 @@ interface LogMedicationDialogProps {
   onOpenChange: (open: boolean) => void;
   medication: Medication;
   onLogAdded: () => void;
+  initialQuantity?: string;
 }
+
+const parseInitialQuantity = (qty?: string): number => {
+  if (!qty) return 1;
+  const match = qty.match(/([\d.]+)/);
+  return match ? parseFloat(match[1]) : 1;
+};
 
 export function LogMedicationDialog({
   open,
   onOpenChange,
   medication,
   onLogAdded,
+  initialQuantity,
 }: LogMedicationDialogProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [useHalves, setUseHalves] = useState(false);
+  const [quantity, setQuantity] = useState(() => parseInitialQuantity(initialQuantity));
+  const [useHalves, setUseHalves] = useState(() => parseInitialQuantity(initialQuantity) % 1 !== 0);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [recentLogs, setRecentLogs] = useState<MedicationLog[]>([]);
   const { sendNotification } = usePushNotifications();
 
-  // Fetch recent logs when dialog opens
+  // Fetch recent logs and set initial quantity when dialog opens
   useEffect(() => {
     if (open && medication.id) {
       fetchRecentLogs();
+      const qty = parseInitialQuantity(initialQuantity);
+      setQuantity(qty);
+      setUseHalves(qty % 1 !== 0);
     }
-  }, [open, medication.id]);
+  }, [open, medication.id, initialQuantity]);
 
   const fetchRecentLogs = async () => {
     try {
