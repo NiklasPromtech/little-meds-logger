@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.ai-health-review]
 verify_jwt = true
+
+[functions.medication-reminder-cron]
+verify_jwt = false

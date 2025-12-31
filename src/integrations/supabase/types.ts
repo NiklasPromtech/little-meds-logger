@@ -231,6 +231,57 @@ export type Database = {
           },
         ]
       }
+      medication_reminders: {
+        Row: {
+          child_id: string
+          child_name: string
+          created_at: string | null
+          id: string
+          medication_log_id: string
+          medication_name: string
+          remind_at: string
+          sent: boolean | null
+          user_id: string
+        }
+        Insert: {
+          child_id: string
+          child_name: string
+          created_at?: string | null
+          id?: string
+          medication_log_id: string
+          medication_name: string
+          remind_at: string
+          sent?: boolean | null
+          user_id: string
+        }
+        Update: {
+          child_id?: string
+          child_name?: string
+          created_at?: string | null
+          id?: string
+          medication_log_id?: string
+          medication_name?: string
+          remind_at?: string
+          sent?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_reminders_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_reminders_medication_log_id_fkey"
+            columns: ["medication_log_id"]
+            isOneToOne: false
+            referencedRelation: "medication_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medications: {
         Row: {
           accurate_medical_name: string | null

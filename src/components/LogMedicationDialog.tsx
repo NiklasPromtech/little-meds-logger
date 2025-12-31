@@ -134,14 +134,38 @@ export function LogMedicationDialog({
         ? `${formatQuantity(quantity)} ${getDisplayUnit(quantity)}`
         : `${formatQuantity(quantity)}x`;
       
-      const { error } = await supabase.from("medication_logs").insert({
+      const { data: logData, error } = await supabase.from("medication_logs").insert({
         medication_id: medication.id,
         given_by: user.id,
         quantity: quantityText,
         notes: notes.trim() || null,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Get medication wait_hours and child info for reminder
+      const { data: medData } = await supabase
+        .from("medications")
+        .select("wait_hours, child_id, children(name)")
+        .eq("id", medication.id)
+        .single();
+
+      // Schedule reminder notification if wait_hours is set
+      if (medData?.wait_hours && logData) {
+        const remindAt = new Date(Date.now() + medData.wait_hours * 60 * 60 * 1000);
+        const childName = (medData.children as any)?.name || "Child";
+        
+        await supabase.from("medication_reminders").insert({
+          medication_log_id: logData.id,
+          user_id: user.id,
+          child_id: medData.child_id,
+          medication_name: medication.name,
+          child_name: childName,
+          remind_at: remindAt.toISOString(),
+        });
+        
+        console.log(`Reminder scheduled for ${medication.name} at ${remindAt.toISOString()}`);
+      }
 
       // Send push notification to other caregivers
       sendNotification({
