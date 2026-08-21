@@ -1,73 +1,35 @@
-# Welcome to your Lovable project
+# Little Meds Logger
 
-## Project info
+A private health-logging app for parents to track a child's medications, symptoms, and vitals — and have exactly the right information ready when it matters.
 
-**URL**: https://lovable.dev/projects/da483f2d-a990-4e9f-8a28-7d111be2e163
+**Live app:** https://little-meds-logger.lovable.app
 
-## How can I edit this code?
+## Why I built it
 
-There are several ways of editing your application.
+We were making frequent hospital visits with our young son. Sitting there each time, we noticed *which* information the medical staff actually cared about — the specific things they read off their screen and asked us about again and again. So we built an app that captures exactly those data points.
 
-**Use Lovable**
+The result: next time we arrived, we could answer every question immediately and accurately — medication doses and timing, symptom frequency, how things had changed since last time. It made a stressful situation faster and calmer, and it helped the staff help our son more quickly.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/da483f2d-a990-4e9f-8a28-7d111be2e163) and start prompting.
+That's the whole idea: log the things clinicians actually ask for, so when you need them, they're one tap away instead of a panicked guess.
 
-Changes made via Lovable will be committed automatically to this repo.
+## What it does
 
-**Use your preferred IDE**
+- **Medication log** — what was given, dose, and exact time, with a running history
+- **Health events** — symptoms and vitals (e.g. vomiting, temperature, respiratory signs) logged with frequency and timing
+- **Notes** — free-text observations ("cough is less dry, slept a few hours uninterrupted")
+- **AI health review** — a quick AI pass over the recent log to summarise what's been happening
+- **Multi-child, private by default** — create an account and track your own children; all data sits behind authentication and is encrypted, visible only to you
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## How it's built
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend:** TypeScript / React (built with [Lovable](https://lovable.dev))
+- **Backend:** Supabase — authentication, encrypted per-user data, edge functions for any API calls so keys stay server-side
+- **AI:** an LLM pass that summarises the recent activity log into a plain-language health review
 
-Follow these steps:
+## Honest status
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+It's a real tool we use, built for our own family first. It works and it's in daily use — but it's a personal project, not a polished product. The point was never to build "another symptom tracker"; it was to solve one specific, real problem well: *walking into a hospital with the exact answers already in hand.*
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/da483f2d-a990-4e9f-8a28-7d111be2e163) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+*One of a number of things I've built — mostly AI-powered tools, data systems, and small apps that solve a real problem. Built solo, shipped live, and in this case, used when it genuinely mattered.*
